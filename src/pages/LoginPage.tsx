@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Lock, Mail, Eye, EyeOff, Warehouse, AlertCircle, ArrowRight, ShieldCheck } from "lucide-react";
+import { api } from "../services/api";
+import { Lock, Mail, Eye, EyeOff, Warehouse, AlertCircle, ArrowRight, ShieldCheck, Database, CheckCircle2 } from "lucide-react";
 
 export const LoginPage: React.FC = () => {
   const [correo, setCorreo] = useState("");
@@ -9,6 +10,8 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [initLoading, setInitLoading] = useState(false);
+  const [initSuccess, setInitSuccess] = useState<string | null>(null);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -25,11 +28,13 @@ export const LoginPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      setInitSuccess(null);
       await login(correo, clave);
       navigate("/home");
     } catch (err: any) {
       const msg =
         err.response?.data?.mensaje ||
+        err.response?.data?.message ||
         err.message ||
         "Error al iniciar sesión. Verifique sus datos.";
       setError(msg);
@@ -38,10 +43,38 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleInicializarBD = async () => {
+    try {
+      setInitLoading(true);
+      setError(null);
+      setInitSuccess(null);
+      const res = await api.get("/init-db");
+      if (res.data?.success) {
+        setInitSuccess(
+          "✅ ¡Base de datos inicializada con éxito! Tablas y usuarios creados en la nube. Ya puedes ingresar."
+        );
+        setCorreo("crodriguez@gmail.com");
+        setClave("password123");
+      } else {
+        setError(res.data?.mensaje || "No se pudo inicializar la base de datos.");
+      }
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.mensaje ||
+        err.response?.data?.error ||
+        err.message ||
+        "Error al contactar con el backend.";
+      setError(`Error al inicializar la base de datos: ${msg}`);
+    } finally {
+      setInitLoading(false);
+    }
+  };
+
   const llenarDemo = (emailDemo: string) => {
     setCorreo(emailDemo);
     setClave("password123");
     setError(null);
+    setInitSuccess(null);
   };
 
   return (
@@ -69,10 +102,33 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
+          {initSuccess && (
+            <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-start gap-2.5 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+              <span className="flex-1">{initSuccess}</span>
+            </div>
+          )}
+
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-              <span>{error}</span>
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex flex-col gap-2.5 shadow-xs">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
+                <span className="flex-1 leading-relaxed">{error}</span>
+              </div>
+              <div className="pt-2 border-t border-rose-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-[11px] font-medium text-rose-600">
+                  ¿Problema con las tablas en Render?
+                </span>
+                <button
+                  type="button"
+                  disabled={initLoading}
+                  onClick={handleInicializarBD}
+                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer"
+                >
+                  <Database className="w-3.5 h-3.5" />
+                  <span>{initLoading ? "Inicializando BD..." : "Inicializar BD en Render"}</span>
+                </button>
+              </div>
             </div>
           )}
 
