@@ -58,9 +58,9 @@ export default function App() {
             </Route>
           </Route>
 
-          {/* Redirección por defecto a /home */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          {/* La primera pantalla que se muestra siempre es el Login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
