@@ -261,14 +261,14 @@ export const UsuariosPage: React.FC = () => {
       {/* Encabezado con estado del modo */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <Users className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-[#063D2A] text-xs font-bold uppercase tracking-wider mb-1">
+            <Users className="w-4 h-4 text-[#28D978]" />
             <span>Módulo de Gestión de Usuarios</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${isEditMode ? "bg-amber-100 text-amber-900 border border-amber-300" : "bg-emerald-100 text-emerald-800 border border-emerald-300"}`}>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${isEditMode ? "bg-[#28D978]/20 text-[#063D2A] border border-[#28D978]/40" : "bg-[#F3F1EA] text-[#063D2A] border border-[#063D2A]/20"}`}>
               {isEditMode ? "Modo Edición Activado" : "Modo Solo Lectura"}
             </span>
           </div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
             {isEditMode ? "Editar y Modificar Usuarios" : "Directorio de Usuarios Registrados"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -282,19 +282,19 @@ export const UsuariosPage: React.FC = () => {
           {isEditMode ? (
             <button
               onClick={() => navigate("/home/usuarios")}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#F3F1EA] hover:bg-slate-200 text-[#063D2A] text-xs font-bold rounded-xl transition-all"
             >
-              <Eye className="w-4 h-4 text-slate-500" />
+              <Eye className="w-4 h-4 text-[#063D2A]" />
               <span>Ver Solo Directorio</span>
             </button>
           ) : (
             <button
               onClick={() => navigate("/home/usuarios/editar")}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs shadow-amber-500/30 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold rounded-xl shadow-xs shadow-[#063D2A]/30 transition-all"
             >
-              <Edit3 className="w-4 h-4" />
+              <Edit3 className="w-4 h-4 text-[#28D978]" />
               <span>Ir a Editar Usuarios</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#28D978]" />
             </button>
           )}
         </div>
@@ -302,14 +302,14 @@ export const UsuariosPage: React.FC = () => {
 
       {/* Alerta informativa en modo solo lectura */}
       {!isEditMode && (
-        <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl flex items-center justify-between text-xs text-blue-900">
+        <div className="p-3.5 bg-[#F3F1EA] border border-[#063D2A]/15 rounded-xl flex items-center justify-between text-xs text-[#063D2A]">
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-blue-600 shrink-0" />
+            <Eye className="w-4 h-4 text-[#28D978] shrink-0" />
             <span>Estás viendo el listado de usuarios en <strong>solo lectura</strong>. Los botones de edición están deshabilitados.</span>
           </div>
           <button
             onClick={() => navigate("/home/usuarios/editar")}
-            className="text-blue-700 hover:text-blue-900 font-bold underline shrink-0 ml-2"
+            className="text-[#063D2A] hover:text-[#022A1E] font-bold underline shrink-0 ml-2"
           >
             Habilitar opciones de edición
           </button>
@@ -358,7 +358,7 @@ export const UsuariosPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
                 placeholder="Ej: 90999999"
                 required
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] text-slate-800"
               />
             </FormField>
 
@@ -368,7 +368,7 @@ export const UsuariosPage: React.FC = () => {
                 value={formData.celular}
                 onChange={(e) => setFormData({ ...formData, celular: e.target.value })}
                 placeholder="Ej: 999111222"
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] text-slate-800"
               />
             </FormField>
           </div>
@@ -381,7 +381,7 @@ export const UsuariosPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
                 placeholder="Nombres"
                 required
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] text-slate-800"
               />
             </FormField>
 
@@ -392,7 +392,7 @@ export const UsuariosPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, apellidoPaterno: e.target.value })}
                 placeholder="Apellido Paterno"
                 required
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] text-slate-800"
               />
             </FormField>
 
@@ -402,7 +402,7 @@ export const UsuariosPage: React.FC = () => {
                 value={formData.apellidoMaterno}
                 onChange={(e) => setFormData({ ...formData, apellidoMaterno: e.target.value })}
                 placeholder="Apellido Materno"
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] text-slate-800"
               />
             </FormField>
           </div>
@@ -414,7 +414,7 @@ export const UsuariosPage: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, correoElectronico: e.target.value })}
               placeholder="correo@ejemplo.com"
               required
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] text-slate-800"
             />
           </FormField>
 
@@ -427,7 +427,7 @@ export const UsuariosPage: React.FC = () => {
               value={formData.clave}
               onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
               placeholder={editingUser ? "Opcional: nueva contraseña" : "••••••••"}
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] text-slate-800"
             />
           </FormField>
 

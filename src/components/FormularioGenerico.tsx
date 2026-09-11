@@ -52,10 +52,10 @@ export const FormActions: React.FC<FormActionsProps> = ({
       <button
         type="submit"
         disabled={loading}
-        className="px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-sm shadow-indigo-600/30 disabled:opacity-50 flex items-center gap-2"
+        className="px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-[#063D2A] hover:bg-[#022A1E] rounded-xl transition-all shadow-sm shadow-[#063D2A]/25 disabled:opacity-50 flex items-center gap-2"
       >
         {loading && (
-          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <span className="w-4 h-4 border-2 border-white border-t-[#28D978] rounded-full animate-spin" />
         )}
         <span>{submitLabel}</span>
       </button>

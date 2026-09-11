@@ -8,22 +8,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+        barbarian: {
+          dark: '#063D2A',       // Verde oscuro principal
+          deep: '#022A1E',       // Verde profundo
+          bright: '#28D978',     // Verde brillante / acento
+          cream: '#F3F1EA',      // Crema claro
+          white: '#FFFFFF',      // Blanco
+          black: '#0B0E0C',      // Negro verdoso
+          muted: '#8B9D95',      // Texto secundario
+          border: '#D8E2DC',     // Bordes suaves
+          card: '#FFFFFF',       // Fondo de tarjetas
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['Bebas Neue', 'Cinzel', 'system-ui', 'sans-serif'],
       },
     },
   },

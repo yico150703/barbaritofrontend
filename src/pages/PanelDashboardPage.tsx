@@ -553,106 +553,106 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           <Link
             to="/home/stock"
-            className="p-6 rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/40 to-white hover:border-emerald-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            className="p-6 rounded-2xl border border-[#063D2A]/15 bg-gradient-to-b from-[#F3F1EA] to-white hover:border-[#28D978] hover:shadow-lg transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mb-4 shadow-md shadow-emerald-600/20">
-                <Boxes className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-[#063D2A] text-white flex items-center justify-center mb-4 shadow-md shadow-[#063D2A]/20">
+                <Boxes className="w-6 h-6 text-[#28D978]" />
               </div>
-              <h4 className="text-base font-bold text-slate-900 group-hover:text-emerald-800 transition-colors">
+              <h4 className="text-base font-bold text-slate-900 group-hover:text-[#063D2A] transition-colors">
                 Gestión de Stock
               </h4>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
                 Consulta de existencias actuales y niveles mínimos en tiempo real.
               </p>
             </div>
-            <div className="pt-4 mt-4 border-t border-emerald-100 flex items-center justify-between text-xs font-bold text-emerald-700">
+            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#063D2A]">
               <span>Ver Stock</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-[#28D978] group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
           <Link
             to="/home/movimientos"
-            className="p-6 rounded-2xl border border-sky-200/80 bg-gradient-to-b from-sky-50/40 to-white hover:border-sky-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            className="p-6 rounded-2xl border border-[#063D2A]/15 bg-gradient-to-b from-[#F3F1EA] to-white hover:border-[#28D978] hover:shadow-lg transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center mb-4 shadow-md shadow-sky-600/20">
-                <TrendingUp className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-[#063D2A] text-white flex items-center justify-center mb-4 shadow-md shadow-[#063D2A]/20">
+                <TrendingUp className="w-6 h-6 text-[#28D978]" />
               </div>
-              <h4 className="text-base font-bold text-slate-900 group-hover:text-sky-700 transition-colors">
+              <h4 className="text-base font-bold text-slate-900 group-hover:text-[#063D2A] transition-colors">
                 Entradas y Salidas
               </h4>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
                 Registrar transacciones de kardex para recepciones y despachos.
               </p>
             </div>
-            <div className="pt-4 mt-4 border-t border-sky-100 flex items-center justify-between text-xs font-bold text-sky-600">
+            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#063D2A]">
               <span>Kardex</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-[#28D978] group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
           <Link
             to="/home/movimientos/editar"
-            className="p-6 rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white hover:border-indigo-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            className="p-6 rounded-2xl border-2 border-[#28D978]/40 bg-gradient-to-b from-[#E8F8F0] to-white hover:border-[#28D978] hover:shadow-lg transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-4 shadow-md shadow-indigo-600/20">
-                <Edit3 className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-[#022A1E] text-white flex items-center justify-center mb-4 shadow-md shadow-[#022A1E]/30">
+                <Edit3 className="w-6 h-6 text-[#28D978]" />
               </div>
-              <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-800 transition-colors">
+              <h4 className="text-base font-bold text-[#063D2A] group-hover:text-[#022A1E] transition-colors">
                 Editar Movimiento
               </h4>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
                 Modificar y rectificar movimientos de kardex registrados por ti.
               </p>
             </div>
-            <div className="pt-4 mt-4 border-t border-indigo-100 flex items-center justify-between text-xs font-bold text-indigo-700">
+            <div className="pt-4 mt-4 border-t border-[#28D978]/20 flex items-center justify-between text-xs font-bold text-[#063D2A]">
               <span>Editar Kardex</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-[#28D978] group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
           <Link
             to="/home/solicitudes"
-            className="p-6 rounded-2xl border border-amber-200/80 bg-gradient-to-b from-amber-50/40 to-white hover:border-amber-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            className="p-6 rounded-2xl border border-[#063D2A]/15 bg-gradient-to-b from-[#F3F1EA] to-white hover:border-[#28D978] hover:shadow-lg transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center mb-4 shadow-md shadow-amber-500/20">
-                <FileText className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-[#063D2A] text-white flex items-center justify-center mb-4 shadow-md shadow-[#063D2A]/20">
+                <FileText className="w-6 h-6 text-[#28D978]" />
               </div>
-              <h4 className="text-base font-bold text-slate-900 group-hover:text-amber-800 transition-colors">
+              <h4 className="text-base font-bold text-slate-900 group-hover:text-[#063D2A] transition-colors">
                 Estado de Solicitud
               </h4>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
                 Consultar requerimientos de insumos y registrar solicitudes.
               </p>
             </div>
-            <div className="pt-4 mt-4 border-t border-amber-100 flex items-center justify-between text-xs font-bold text-amber-700">
+            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#063D2A]">
               <span>Solicitudes</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-[#28D978] group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
           <Link
             to="/home/inventario-realizar"
-            className="p-6 rounded-2xl border border-purple-200/80 bg-gradient-to-b from-purple-50/40 to-white hover:border-purple-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            className="p-6 rounded-2xl border border-[#063D2A]/15 bg-gradient-to-b from-[#F3F1EA] to-white hover:border-[#28D978] hover:shadow-lg transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center mb-4 shadow-md shadow-purple-600/20">
-                <ClipboardCheck className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-[#063D2A] text-white flex items-center justify-center mb-4 shadow-md shadow-[#063D2A]/20">
+                <ClipboardCheck className="w-6 h-6 text-[#28D978]" />
               </div>
-              <h4 className="text-base font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
+              <h4 className="text-base font-bold text-slate-900 group-hover:text-[#063D2A] transition-colors">
                 Realizar Inventario
               </h4>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
                 Efectuar conteos físicos rutinarios y validación por fecha.
               </p>
             </div>
-            <div className="pt-4 mt-4 border-t border-purple-100 flex items-center justify-between text-xs font-bold text-purple-600">
+            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#063D2A]">
               <span>Conteo Físico</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-[#28D978] group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
         </div>

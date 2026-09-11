@@ -47,21 +47,21 @@ export const DashboardHomePage: React.FC = () => {
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
-      {/* Banner Principal de Bienvenida */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-9 shadow-xl border border-indigo-900/40">
+      {/* Banner Principal de Bienvenida Barbarian */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0B0E0C] via-[#022A1E] to-[#063D2A] text-white p-6 sm:p-9 shadow-2xl border border-[#28D978]/30">
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-semibold mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#28D978]/20 border border-[#28D978]/40 text-[#28D978] text-xs font-bold mb-4 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-[#28D978]" />
             <span>Dashboard Inicial &bull; Sesión: {perfilActivo?.nombre || "Usuario"}</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
             Bienvenido, {usuario?.nombres} {usuario?.apellidoPaterno}
           </h1>
-          <p className="text-slate-300 text-sm sm:text-base mt-3 leading-relaxed">
+          <p className="text-slate-200 text-sm sm:text-base mt-3 leading-relaxed">
             {esTecnico ? (
               <>
                 Como <strong className="text-white">Técnico</strong> cuentas con{" "}
-                <span className="text-sky-300 font-semibold">acceso general a todos los módulos del sistema</span>.
+                <span className="text-[#28D978] font-bold">acceso general a todos los módulos del sistema</span>.
                 Selecciona a continuación el panel al que deseas ingresar para desplegar sus menús y submódulos autorizados.
               </>
             ) : esGerente ? (
@@ -72,19 +72,19 @@ export const DashboardHomePage: React.FC = () => {
             ) : (
               <>
                 Has ingresado con el rol de <strong className="text-white">Miembro de Equipo</strong>.
-                Haz clic en tu panel operativo para desplegar tus 4 submódulos autorizados de almacén e inventario.
+                Haz clic en tu panel operativo para desplegar tus 5 submódulos autorizados de almacén e inventario.
               </>
             )}
           </p>
         </div>
 
-        {/* Círculo de luz decorativo */}
-        <div className="absolute -right-10 -bottom-10 w-80 h-80 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none" />
+        {/* Círculo de luz decorativo en verde brillante */}
+        <div className="absolute -right-10 -bottom-10 w-80 h-80 rounded-full bg-[#28D978]/15 blur-3xl pointer-events-none" />
       </div>
 
       {/* Nota informativa de regla de negocio */}
-      <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 text-indigo-900 text-xs sm:text-sm flex items-start gap-3 shadow-xs">
-        <Info className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+      <div className="p-4 rounded-2xl bg-white border border-[#063D2A]/15 text-[#063D2A] text-xs sm:text-sm flex items-start gap-3 shadow-xs">
+        <Info className="w-5 h-5 text-[#063D2A] shrink-0 mt-0.5" />
         <p className="leading-relaxed">
           <strong>Regla de Navegación:</strong> Actualmente te encuentras en el <strong>Dashboard Inicial</strong>, por lo que el menú lateral izquierdo solo muestra la opción <em>"Inicio"</em>. Al hacer clic en un panel, serás redirigido a su dashboard y el menú lateral cargará automáticamente todos los submenús correspondientes. Puedes volver aquí en cualquier momento haciendo clic en <em>"Inicio"</em>.
         </p>
@@ -145,7 +145,7 @@ export const DashboardHomePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleEntrarPanel("tecnico", "/home/panel-tecnico")}
-                className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-sky-600 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-sky-600/30"
+                className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
               >
                 <span>Ingresar al Panel Técnico</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -190,7 +190,7 @@ export const DashboardHomePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleEntrarPanel("gerencial", "/home/panel-gerencial")}
-                className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-amber-600/30"
+                className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
               >
                 <span>Ingresar al Panel Administrador</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -235,7 +235,7 @@ export const DashboardHomePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleEntrarPanel("miembro-equipo", "/home/panel-miembro-equipo")}
-                className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-emerald-600/30"
+                className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
               >
                 <span>Ingresar al Panel Miembro de Equipo</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

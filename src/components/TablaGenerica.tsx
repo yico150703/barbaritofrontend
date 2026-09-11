@@ -56,7 +56,7 @@ export function TablaGenerica<T>({
               value={searchQuery || ""}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full pl-9.5 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs"
+              className="w-full pl-9.5 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A] transition-all shadow-xs"
             />
           </div>
         )}
@@ -64,9 +64,9 @@ export function TablaGenerica<T>({
         {onNuevo && (
           <button
             onClick={onNuevo}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-indigo-600/20 active:scale-[0.98]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-[#063D2A]/20 active:scale-[0.98]"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-[#28D978]" />
             <span>{nuevoLabel}</span>
           </button>
         )}
@@ -76,7 +76,7 @@ export function TablaGenerica<T>({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-200/80 bg-slate-100/60 text-slate-600 text-xs font-bold uppercase tracking-wider">
+            <tr className="border-b border-[#063D2A]/10 bg-[#F3F1EA]/80 text-[#063D2A] text-xs font-bold uppercase tracking-wider">
               {columns.map((col, idx) => (
                 <th key={idx} className={`py-3.5 px-4 ${col.className || ""}`}>
                   {col.header}
@@ -94,7 +94,7 @@ export function TablaGenerica<T>({
                   colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
                   className="py-12 text-center text-slate-400"
                 >
-                  <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  <div className="w-8 h-8 border-3 border-[#063D2A] border-t-[#28D978] rounded-full animate-spin mx-auto mb-2" />
                   <p className="text-xs font-medium">Cargando información...</p>
                 </td>
               </tr>
@@ -111,7 +111,7 @@ export function TablaGenerica<T>({
               data.map((item) => (
                 <tr
                   key={keyExtractor(item)}
-                  className="hover:bg-slate-50/80 transition-colors"
+                  className="hover:bg-[#F3F1EA]/40 transition-colors"
                 >
                   {columns.map((col, cIdx) => {
                     let cellContent: React.ReactNode = null;
@@ -135,7 +135,7 @@ export function TablaGenerica<T>({
                           <button
                             onClick={() => onEdit(item)}
                             title="Editar"
-                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            className="p-1.5 text-slate-500 hover:text-[#063D2A] hover:bg-[#F3F1EA] rounded-lg transition-colors"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>

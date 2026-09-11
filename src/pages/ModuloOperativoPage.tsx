@@ -36,6 +36,7 @@ import {
   Printer,
   ChevronRight,
   UserCheck,
+  Truck,
 } from "lucide-react";
 
 export const ModuloOperativoPage: React.FC = () => {
@@ -55,7 +56,10 @@ export const ModuloOperativoPage: React.FC = () => {
   const [actividades, setActividades] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Estados de alertas y feedback
+  // Estados de filtros para catálogo maestro estilo Barbarian
+  const [filtroBusqueda, setFiltroBusqueda] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("TODAS");
+  const [filtroProveedor, setFiltroProveedor] = useState("TODOS");
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -757,7 +761,7 @@ export const ModuloOperativoPage: React.FC = () => {
                   placeholder="Ej. V-020, S-015"
                   value={formItem.codigo}
                   onChange={(e) => setFormItem({ ...formItem, codigo: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
                 />
               </div>
 
@@ -769,7 +773,7 @@ export const ModuloOperativoPage: React.FC = () => {
                   placeholder="Ej. Pimiento Morrón"
                   value={formItem.nombre}
                   onChange={(e) => setFormItem({ ...formItem, nombre: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
                 />
               </div>
 
@@ -778,7 +782,7 @@ export const ModuloOperativoPage: React.FC = () => {
                 <select
                   value={formItem.unidad}
                   onChange={(e) => setFormItem({ ...formItem, unidad: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
                 >
                   <option value="Kg">Kilogramos (Kg)</option>
                   <option value="Lt">Litros (Lt)</option>
@@ -795,7 +799,7 @@ export const ModuloOperativoPage: React.FC = () => {
                   step="0.1"
                   value={formItem.stockMinimo}
                   onChange={(e) => setFormItem({ ...formItem, stockMinimo: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
                 />
               </div>
             </div>
@@ -2077,23 +2081,23 @@ export const ModuloOperativoPage: React.FC = () => {
 
       {/* Catálogo de Ítems */}
       {path === "/home/items" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Gestión de Ítems ({items.length} productos en BD)</h2>
-              <p className="text-xs text-slate-500">Catálogo maestro de artículos y materias primas del almacén.</p>
+              <h2 className="text-xl font-bold text-[#0B0E0C]">Catálogo Maestro de Productos</h2>
+              <p className="text-xs text-slate-500">Consulta y administración de insumos, materias primas y existencias de almacén.</p>
             </div>
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => navigate("/home/items/editar")}
-                className="px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center gap-2"
+                className="px-4 py-2.5 rounded-xl border border-[#063D2A]/30 bg-[#F3F1EA] hover:bg-[#063D2A]/10 text-[#063D2A] text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
               >
-                <Edit3 className="w-4 h-4" />
+                <Edit3 className="w-4 h-4 text-[#063D2A]" />
                 <span>Editar Ítem</span>
               </button>
               <button
                 onClick={() => navigate("/home/items/agregar")}
-                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
+                className="px-4 py-2.5 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Agregar Nuevo Ítem</span>
@@ -2101,47 +2105,131 @@ export const ModuloOperativoPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-100">
-                <tr>
-                  <th className="py-3 px-4">Código</th>
-                  <th className="py-3 px-4">Nombre del Ítem</th>
-                  <th className="py-3 px-4">Categoría</th>
-                  <th className="py-3 px-4">Proveedor</th>
-                  <th className="py-3 px-4">Unidad</th>
-                  <th className="py-3 px-4 text-right">Stock Mínimo</th>
-                  <th className="py-3 px-4 text-right">Stock Actual</th>
-                  <th className="py-3 px-4 text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
-                {items.slice(0, 20).map((it) => (
-                  <tr key={it.idProducto} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-indigo-600">{it.codigo}</td>
-                    <td className="py-3 px-4 font-bold text-slate-900">{it.nombre}</td>
-                    <td className="py-3 px-4">{it.categoriaNombre || "General"}</td>
-                    <td className="py-3 px-4 text-slate-500">{it.proveedorNombre || "Sin asignar"}</td>
-                    <td className="py-3 px-4"><span className="px-2 py-0.5 rounded-full bg-slate-100 font-bold">{it.unidad}</span></td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-500">{it.stockMinimo}</td>
-                    <td className="py-3 px-4 text-right font-extrabold text-slate-900">{it.stockActual ?? it.stockMinimo}</td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          handleSelectEditItem(String(it.idProducto));
-                          navigate("/home/items/editar");
-                        }}
-                        title="Editar ítem"
-                        className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 border border-indigo-200"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
+          {/* Barra de Filtros y Búsqueda estilo Barbarian (Imagen 2) */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 bg-[#F3F1EA]/80 rounded-2xl border border-slate-200/80">
+            {/* Buscador */}
+            <div className="relative md:col-span-6">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={filtroBusqueda}
+                onChange={(e) => setFiltroBusqueda(e.target.value)}
+                placeholder="Buscar por código, producto, categoría o proveedor"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40 focus:border-[#28D978]"
+              />
+            </div>
+
+            {/* Selector Categoría */}
+            <div className="md:col-span-3">
+              <select
+                value={filtroCategoria}
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40"
+              >
+                <option value="TODAS">Todas las categorías</option>
+                {Array.from(new Set(items.map((it) => it.categoriaNombre || "General"))).map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
-              </tbody>
-            </table>
+              </select>
+            </div>
+
+            {/* Selector Proveedor */}
+            <div className="md:col-span-3">
+              <select
+                value={filtroProveedor}
+                onChange={(e) => setFiltroProveedor(e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40"
+              >
+                <option value="TODOS">Todos los proveedores</option>
+                {Array.from(new Set(items.map((it) => it.proveedorNombre || "Sin asignar"))).map((prov) => (
+                  <option key={prov} value={prov}>{prov}</option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          {/* Contador de productos y Tabla estilo Barbarian */}
+          {(() => {
+            const q = filtroBusqueda.toLowerCase().trim();
+            const itemsFiltrados = items.filter((it) => {
+              const matchQ =
+                !q ||
+                it.codigo?.toLowerCase().includes(q) ||
+                it.nombre?.toLowerCase().includes(q) ||
+                it.categoriaNombre?.toLowerCase().includes(q) ||
+                it.proveedorNombre?.toLowerCase().includes(q);
+              const matchCat = filtroCategoria === "TODAS" || (it.categoriaNombre || "General") === filtroCategoria;
+              const matchProv = filtroProveedor === "TODOS" || (it.proveedorNombre || "Sin asignar") === filtroProveedor;
+              return matchQ && matchCat && matchProv;
+            });
+
+            return (
+              <>
+                <div className="text-xs text-slate-500 font-medium px-1">
+                  Mostrando <strong className="text-[#063D2A] font-bold">{itemsFiltrados.length}</strong> de <strong className="text-slate-800 font-bold">{items.length}</strong> productos
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-[#F3F1EA] text-slate-600 text-[11px] uppercase font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="py-3 px-4">Código</th>
+                        <th className="py-3 px-4">Producto</th>
+                        <th className="py-3 px-4">Categoría</th>
+                        <th className="py-3 px-4">Proveedor</th>
+                        <th className="py-3 px-4">Unidad</th>
+                        <th className="py-3 px-4 text-right">Stock Mínimo</th>
+                        <th className="py-3 px-4 text-right">Stock Actual</th>
+                        <th className="py-3 px-4 text-center">Estado</th>
+                        <th className="py-3 px-4 text-right">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
+                      {itemsFiltrados.map((it) => (
+                        <tr key={it.idProducto} className="hover:bg-[#F3F1EA]/60 transition-colors">
+                          <td className="py-3 px-4">
+                            <span className="px-2.5 py-1 rounded-lg bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/30 font-bold text-xs inline-block">
+                              {it.codigo}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-bold text-[#0B0E0C]">{it.nombre}</td>
+                          <td className="py-3 px-4 text-slate-600">{it.categoriaNombre || "General"}</td>
+                          <td className="py-3 px-4 text-slate-600">
+                            <div className="flex items-center gap-1.5">
+                              <Truck className="w-3.5 h-3.5 text-[#28D978] shrink-0" />
+                              <span>{it.proveedorNombre || "Sin asignar"}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-semibold text-slate-600 uppercase">{it.unidad}</span>
+                          </td>
+                          <td className="py-3 px-4 text-right font-bold text-slate-600">{it.stockMinimo} {it.unidad}</td>
+                          <td className="py-3 px-4 text-right font-extrabold text-[#063D2A]">{it.stockActual ?? it.stockMinimo} {it.unidad}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/30">
+                              Activo
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              onClick={() => {
+                                handleSelectEditItem(String(it.idProducto));
+                                navigate("/home/items/editar");
+                              }}
+                              title="Editar ítem"
+                              className="p-1.5 rounded-lg text-[#063D2A] hover:bg-[#E8F8F0] border border-[#063D2A]/20 transition-colors cursor-pointer"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 
@@ -2274,21 +2362,23 @@ export const ModuloOperativoPage: React.FC = () => {
                 {movimientos.map((m) => {
                   const esPropio = Number(m.usuarioRegistro) === Number(currentUserId);
                   return (
-                  <tr key={m.idMovimiento} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-sky-600">
-                      <span>{m.codigo}</span>
+                  <tr key={m.idMovimiento} className="hover:bg-[#F3F1EA]/60 transition-colors">
+                    <td className="py-3 px-4">
+                      <span className="px-2.5 py-1 rounded-lg bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/30 font-bold text-xs inline-block">
+                        {m.codigo}
+                      </span>
                       {esPropio && (
-                        <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-sky-100 text-sky-700">
+                        <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#28D978]/20 text-[#063D2A] border border-[#28D978]/30">
                           Propio
                         </span>
                       )}
                     </td>
                     <td className="py-3 px-4 font-bold">
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] ${m.tipoMovimiento === "ENTRADA" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${m.tipoMovimiento === "ENTRADA" ? "bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/40" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
                         {m.tipoMovimiento}
                       </span>
                     </td>
-                    <td className="py-3 px-4">{m.motivoMovimiento}</td>
+                    <td className="py-3 px-4 text-[#0B0E0C] font-medium">{m.motivoMovimiento}</td>
                     <td className="py-3 px-4 text-slate-500">{m.fechaMovimiento}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5">
@@ -2296,7 +2386,7 @@ export const ModuloOperativoPage: React.FC = () => {
                           {m.usuarioNombre || (esPropio ? `${usuario?.nombres || "Usuario"} ${usuario?.apellidoPaterno || ""}`.trim() : "Personal de Almacén")}
                         </span>
                         {esPropio && (
-                          <span className="text-[10px] text-sky-600 font-bold">(Tú)</span>
+                          <span className="text-[10px] text-[#063D2A] font-extrabold bg-[#28D978]/20 px-1.5 py-0.5 rounded-md border border-[#28D978]/30">(Tú)</span>
                         )}
                       </div>
                     </td>
@@ -2329,7 +2419,7 @@ export const ModuloOperativoPage: React.FC = () => {
                               navigate("/home/movimientos/editar");
                             }}
                             title={esMiembroEquipo ? "Editar este movimiento (registrado por ti)" : "Editar movimiento"}
-                            className="p-1.5 rounded-lg text-sky-600 hover:bg-sky-50 border border-sky-200"
+                            className="p-1.5 rounded-lg text-[#063D2A] hover:bg-[#E8F8F0] border border-[#063D2A]/20 transition-colors cursor-pointer"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>

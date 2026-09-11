@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
-import { Lock, Mail, Eye, EyeOff, Warehouse, AlertCircle, ArrowRight, ShieldCheck, Database, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, AlertCircle, CheckCircle2, ShieldCheck, Database, Wrench, Shield, Users } from "lucide-react";
+import barBgImg from "../assets/barbarian_bar_bg.jpg";
+import vikingLogoImg from "../assets/barbarian_viking_logo.jpg";
 
 export const LoginPage: React.FC = () => {
   const [correo, setCorreo] = useState("");
@@ -36,7 +38,7 @@ export const LoginPage: React.FC = () => {
         err.response?.data?.mensaje ||
         err.response?.data?.message ||
         err.message ||
-        "Error al iniciar sesión. Verifique sus datos.";
+        "Error al iniciar sesión. Verifique sus credenciales.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -51,7 +53,7 @@ export const LoginPage: React.FC = () => {
       const res = await api.get("/init-db");
       if (res.data?.success) {
         setInitSuccess(
-          "✅ ¡Base de datos inicializada con éxito! Tablas y usuarios creados en la nube. Ya puedes ingresar."
+          "✅ ¡Base de datos inicializada con éxito! Tablas y datos de Barbarian creados. Ya puedes ingresar."
         );
         setCorreo("crodriguez@gmail.com");
         setClave("password123");
@@ -78,65 +80,154 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col justify-center items-center p-4 sm:p-6 text-slate-800">
-      <div className="w-full max-w-md">
-        {/* Marca */}
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white mx-auto flex items-center justify-center shadow-lg shadow-indigo-600/40 mb-4 border border-indigo-400/30">
-            <Warehouse className="w-7 h-7" />
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F3F1EA] overflow-hidden font-sans">
+      {/* ========================================================================= */}
+      {/* LADO IZQUIERDO: HERO BRANDING BARBARIAN CON FOTOGRAFÍA Y CORTE DIAGONAL */}
+      {/* ========================================================================= */}
+      <div className="relative w-full lg:w-[54%] min-h-[420px] lg:min-h-screen bg-[#022A1E] flex flex-col justify-between p-8 sm:p-12 z-10 overflow-hidden">
+        {/* Imagen de fondo de Cervecería/Bar */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity scale-105 transform hover:scale-100 transition-transform duration-1000 ease-out pointer-events-none"
+          style={{ backgroundImage: `url(${barBgImg})` }}
+        />
+
+        {/* Gradiente tonal Verde Profundo & Verde Oscuro */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(11, 14, 12, 0.94) 0%, rgba(2, 42, 30, 0.90) 45%, rgba(6, 61, 42, 0.85) 100%)",
+          }}
+        />
+
+        {/* Marco tecnológico HUD / Cyberpunk en esquinas */}
+        <div className="absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 border-[#28D978]/50 pointer-events-none" />
+        <div className="absolute top-6 right-12 w-12 h-12 border-t-2 border-r-2 border-[#28D978]/50 pointer-events-none hidden lg:block" />
+        <div className="absolute bottom-6 left-6 w-12 h-12 border-b-2 border-l-2 border-[#28D978]/50 pointer-events-none" />
+
+        {/* Línea neón diagonal en el borde divisorio derecho (solo en desktop) */}
+        <div className="absolute -right-2 top-0 bottom-0 w-3 bg-[#28D978] shadow-[0_0_20px_#28D978] hidden lg:block z-30 transform -skew-x-3 origin-top-right" />
+
+        {/* Header superior del Hero */}
+        <div className="relative z-20 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#28D978] animate-pulse shadow-[0_0_8px_#28D978]" />
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-[#28D978]">
+              Plataforma Oficial
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Sistema de Almacén
+          <span className="text-[11px] font-mono text-slate-400/80 tracking-widest">
+            v2.4 &bull; SECURE RBAC
+          </span>
+        </div>
+
+        {/* Contenido Central: Isotipo Vikingo + BARBARIAN + Subtítulo */}
+        <div className="relative z-20 my-auto py-10 flex flex-col items-center text-center">
+          {/* Isotipo Vikingo Barbarian */}
+          <div className="relative mb-5 group">
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-[#28D978] to-[#063D2A] opacity-60 blur-md group-hover:opacity-100 transition-opacity" />
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-[#022A1E] border-2 border-[#28D978]/60 shadow-2xl flex items-center justify-center p-1">
+              <img
+                src={vikingLogoImg}
+                alt="Barbarian Viking"
+                className="w-full h-full object-cover rounded-2xl brightness-110 contrast-125"
+              />
+            </div>
+          </div>
+
+          {/* Nombre de Marca: BARBARIAN */}
+          <h1 className="font-['Bebas_Neue'] text-6xl sm:text-7xl lg:text-8xl tracking-[0.22em] text-white font-black leading-none drop-shadow-[0_4px_15px_rgba(0,0,0,0.8)] select-none">
+            BARBARIAN
           </h1>
-          <p className="text-sm text-slate-400 mt-1.5 font-medium">
-            Control de Acceso RBAC &bull; 3 Roles Principales
+
+          {/* Subtítulo: Sistema de Gestión de Inventario */}
+          <p className="text-xs sm:text-sm font-bold text-[#28D978] tracking-[0.28em] uppercase mt-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            Sistema de Gestión de Inventario
+          </p>
+
+          <p className="text-xs text-slate-300/80 max-w-md mt-4 leading-relaxed hidden sm:block">
+            Control de existencias en tiempo real, kardex de entradas y salidas, solicitudes de compra y auditoría de inventario físico.
           </p>
         </div>
 
-        {/* Tarjeta de Login */}
-        <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/20">
+        {/* Footer del Hero con 3 puntos de estado */}
+        <div className="relative z-20 flex items-center justify-between pt-4 border-t border-slate-700/40">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#28D978]/80" />
+            <span className="w-2 h-2 rounded-full bg-[#28D978]/50" />
+            <span className="w-2 h-2 rounded-full bg-[#28D978]/20" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+            Cervecería Barbarian &bull; Almacén Central
+          </span>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* LADO DERECHO: FORMULARIO FLOTANTE SOBRE FONDO CREMA CLARO (#F3F1EA) */}
+      {/* ========================================================================= */}
+      <div className="relative w-full lg:w-[46%] min-h-[600px] lg:min-h-screen bg-[#F3F1EA] flex flex-col justify-center items-center p-6 sm:p-12 relative">
+        {/* Trama de puntos sutiles */}
+        <div className="absolute inset-0 bg-barbarian-dots opacity-20 pointer-events-none" />
+
+        {/* Tarjeta Flotante Blanca (#FFFFFF) con bordes redondeados y sombra profunda */}
+        <div className="relative w-full max-w-md bg-white rounded-[2.2rem] p-7 sm:p-10 shadow-[0_20px_50px_rgba(6,61,42,0.12)] border border-[#063D2A]/10 z-10 animate-in fade-in duration-300">
+          {/* Header de la Tarjeta */}
+          <div className="text-center mb-6">
+            <span className="inline-block text-[10px] font-black uppercase tracking-[0.25em] text-[#28D978] mb-1">
+              ACCESO SEGURO
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#063D2A] tracking-tight">
+              INICIAR SESIÓN
+            </h2>
+            <div className="w-12 h-1 bg-[#28D978] rounded-full mx-auto my-2.5" />
+            <p className="text-xs text-slate-500 font-medium">
+              Ingresa tus credenciales para acceder al sistema.
+            </p>
+          </div>
+
+          {/* Mensajes de Alerta */}
           {expirado && (
-            <div className="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2.5">
+            <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
-              <span>Tu sesión anterior ha expirado. Por favor, vuelve a iniciar sesión.</span>
+              <span>Tu sesión ha expirado. Por favor, identifícate de nuevo.</span>
             </div>
           )}
 
           {initSuccess && (
-            <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-start gap-2.5 shadow-xs">
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-start gap-2 shadow-xs">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
               <span className="flex-1">{initSuccess}</span>
             </div>
           )}
 
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex flex-col gap-2.5 shadow-xs">
-              <div className="flex items-start gap-2.5">
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex flex-col gap-2 shadow-xs">
+              <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
                 <span className="flex-1 leading-relaxed">{error}</span>
               </div>
-              <div className="pt-2 border-t border-rose-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span className="text-[11px] font-medium text-rose-600">
-                  ¿Problema con las tablas en Render?
-                </span>
+              <div className="pt-2 border-t border-rose-200/60 flex items-center justify-between gap-2">
+                <span className="text-[10px] text-rose-600 font-medium">¿Problema en BD?</span>
                 <button
                   type="button"
                   disabled={initLoading}
                   onClick={handleInicializarBD}
-                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer"
+                  className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer disabled:opacity-50"
                 >
-                  <Database className="w-3.5 h-3.5" />
-                  <span>{initLoading ? "Inicializando BD..." : "Inicializar BD en Render"}</span>
+                  <Database className="w-3 h-3" />
+                  <span>{initLoading ? "Reparando..." : "Sembrar Base de Datos"}</span>
                 </button>
               </div>
             </div>
           )}
 
+          {/* Formulario de Login */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Campo Correo */}
+            {/* Campo Correo Electrónico */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                Correo Electrónico
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                Correo electrónico
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -144,16 +235,16 @@ export const LoginPage: React.FC = () => {
                   type="email"
                   value={correo}
                   onChange={(e) => setCorreo(e.target.value)}
-                  placeholder="ejemplo@gmail.com"
+                  placeholder="ejemplo@barbarian.pe"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40 focus:border-[#28D978] transition-all"
                 />
               </div>
             </div>
 
-            {/* Campo Clave */}
+            {/* Campo Contraseña con botón "Ver" */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                 Contraseña
               </label>
               <div className="relative">
@@ -164,92 +255,79 @@ export const LoginPage: React.FC = () => {
                   onChange={(e) => setClave(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-10 pr-11 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800"
+                  className="w-full pl-10 pr-14 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40 focus:border-[#28D978] transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 hover:text-[#063D2A] transition-colors uppercase px-1 py-0.5 rounded cursor-pointer"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? "Ocultar" : "Ver"}
                 </button>
               </div>
             </div>
 
-            {/* Botón Ingresar */}
+            {/* Botón INGRESAR en Verde Oscuro (#063D2A) */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className="w-full py-3.5 px-4 bg-[#063D2A] hover:bg-[#022A1E] text-white font-extrabold text-sm uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-[#063D2A]/25 active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-3"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <>
-                  <span>Ingresar al Sistema</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
+                <span>INGRESAR</span>
               )}
             </button>
           </form>
 
-          {/* Cuentas reales para los 3 Roles */}
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <div className="flex items-center gap-2 mb-3">
-              <ShieldCheck className="w-4 h-4 text-indigo-600" />
-              <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Cuentas de Prueba (Clic Rápido):
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-2">
+          {/* Indicador de Acceso protegido y supervisado */}
+          <div className="mt-5 text-center flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
+            <span className="w-2 h-2 rounded-full bg-[#28D978] animate-pulse" />
+            <span>Acceso protegido y supervisado</span>
+          </div>
+
+          {/* Sección de Credenciales Rápidas para Demostración */}
+          <div className="mt-6 pt-5 border-t border-slate-100">
+            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center mb-2.5">
+              Acceso rápido para demostración
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-center">
               <button
                 type="button"
                 onClick={() => llenarDemo("crodriguez@gmail.com")}
-                className="w-full px-3 py-2 text-left text-xs bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 rounded-xl transition-all flex items-center justify-between group"
+                className="px-2 py-1.5 rounded-lg bg-[#022A1E]/5 hover:bg-[#022A1E]/15 border border-[#063D2A]/20 text-[11px] font-bold text-[#063D2A] transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+                title="Carlos Rodríguez - Técnico (Superusuario)"
               >
-                <div>
-                  <span className="font-bold text-slate-800 group-hover:text-sky-800">Carlos Rodríguez</span>
-                  <span className="block text-[11px] text-slate-500">crodriguez@gmail.com</span>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800">
-                  Técnico (Acceso a los 3 Paneles)
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => llenarDemo("jrios@gmail.com")}
-                className="w-full px-3 py-2 text-left text-xs bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 rounded-xl transition-all flex items-center justify-between group"
-              >
-                <div>
-                  <span className="font-bold text-slate-800 group-hover:text-amber-900">José Ríos</span>
-                  <span className="block text-[11px] text-slate-500">jrios@gmail.com</span>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
-                  Gerente / Administrador
-                </span>
+                <Wrench className="w-3.5 h-3.5 text-[#063D2A]" />
+                <span>Técnico</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => llenarDemo("rdiaz@gmail.com")}
-                className="w-full px-3 py-2 text-left text-xs bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-xl transition-all flex items-center justify-between group"
+                className="px-2 py-1.5 rounded-lg bg-[#022A1E]/5 hover:bg-[#022A1E]/15 border border-[#063D2A]/20 text-[11px] font-bold text-[#063D2A] transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+                title="Roberto Díaz - Administrador / Gerente"
               >
-                <div>
-                  <span className="font-bold text-slate-800 group-hover:text-emerald-900">Roberto Díaz</span>
-                  <span className="block text-[11px] text-slate-500">rdiaz@gmail.com</span>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">
-                  Miembro de equipo (Operativo)
-                </span>
+                <Shield className="w-3.5 h-3.5 text-[#063D2A]" />
+                <span>Gerente</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => llenarDemo("acastro@gmail.com")}
+                className="px-2 py-1.5 rounded-lg bg-[#022A1E]/5 hover:bg-[#022A1E]/15 border border-[#063D2A]/20 text-[11px] font-bold text-[#063D2A] transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+                title="Ana Castro - Miembro de Equipo"
+              >
+                <Users className="w-3.5 h-3.5 text-[#063D2A]" />
+                <span>Miembro</span>
               </button>
             </div>
+            <p className="text-[10px] text-slate-400 text-center mt-2 font-mono">
+              Clave para todos: <strong className="text-slate-600 font-bold">password123</strong>
+            </p>
           </div>
         </div>
-
-        <p className="text-center text-xs text-slate-500 mt-6">
-          Contraseña demo para todos: <code className="text-indigo-400 font-bold">password123</code>
-        </p>
       </div>
     </div>
   );

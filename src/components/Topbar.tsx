@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LogOut, Home, Menu, ShieldCheck, Warehouse, Boxes, Wrench } from "lucide-react";
+import { LogOut, Home, Menu, Settings, Wrench, Shield, Users, ChevronDown, CheckCircle2 } from "lucide-react";
 
 export const Topbar: React.FC = () => {
   const { usuario, perfilActivo, panelActivo, logout, toggleSidebar, seleccionarPanel } = useAuth();
   const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdown al hacer clic afuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -14,114 +27,139 @@ export const Topbar: React.FC = () => {
 
   const handleVolverInicio = async () => {
     await seleccionarPanel(null);
+    setDropdownOpen(false);
     navigate("/home");
   };
 
-  // Color e ícono del panel activo
-  const getPanelBadge = () => {
-    switch (panelActivo) {
-      case "tecnico":
-        return {
-          label: "Panel Técnico",
-          style: "bg-sky-100 text-sky-800 border-sky-300 ring-sky-500/20",
-          icon: Wrench,
-        };
-      case "gerencial":
-        return {
-          label: "Panel Administrador",
-          style: "bg-amber-100 text-amber-900 border-amber-300 ring-amber-500/20",
-          icon: Warehouse,
-        };
-      case "miembro-equipo":
-        return {
-          label: "Panel Miembro de Equipo",
-          style: "bg-emerald-100 text-emerald-800 border-emerald-300 ring-emerald-500/20",
-          icon: Boxes,
-        };
-      default:
-        return {
-          label: "Dashboard Inicial",
-          style: "bg-indigo-100 text-indigo-800 border-indigo-300 ring-indigo-500/20",
-          icon: ShieldCheck,
-        };
+  const getRoleBadge = () => {
+    if (panelActivo === "tecnico") {
+      return { label: "Técnico (Super)", icon: Wrench, color: "text-[#063D2A] bg-[#28D978]/20 border-[#28D978]/40" };
     }
+    if (panelActivo === "gerencial") {
+      return { label: "Administrador / Supervisor", icon: Shield, color: "text-[#063D2A] bg-amber-100 border-amber-300" };
+    }
+    if (panelActivo === "miembro-equipo") {
+      return { label: "Miembro de Equipo", icon: Users, color: "text-[#063D2A] bg-emerald-100 border-emerald-300" };
+    }
+    return { label: perfilActivo?.nombre || "Usuario", icon: CheckCircle2, color: "text-[#063D2A] bg-[#28D978]/15 border-[#28D978]/30" };
   };
 
-  const panelInfo = getPanelBadge();
-  const PanelIcon = panelInfo.icon;
+  const roleInfo = getRoleBadge();
+  const RoleIcon = roleInfo.icon;
 
   const iniciales = usuario
     ? `${usuario.nombres?.[0] || ""}${usuario.apellidoPaterno?.[0] || ""}`.toUpperCase()
-    : "UA";
+    : "BA";
+
+  const nombreCompleto = usuario
+    ? `${usuario.nombres} ${usuario.apellidoPaterno}`
+    : "Roberto Díaz";
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm/50">
-      {/* Lado izquierdo: Botón toggle móvil y título */}
-      <div className="flex items-center gap-3">
+    <header className="h-16 bg-white border-b border-slate-200/90 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs select-none">
+      {/* Lado izquierdo: Botón toggle móvil y título del sistema */}
+      <div className="flex items-center gap-3 sm:gap-4">
         <button
           onClick={toggleSidebar}
           aria-label="Alternar menú lateral"
-          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+          className="p-2 rounded-xl text-slate-600 hover:text-[#063D2A] hover:bg-[#F3F1EA] transition-colors cursor-pointer"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="hidden sm:block">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Módulo Operativo &bull; Almacén
-          </span>
-          <h1 className="text-sm font-bold text-slate-800 leading-tight">
-            {panelActivo ? panelInfo.label : "Dashboard Inicial (Selección de Paneles)"}
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-sm font-semibold text-slate-600 leading-tight">
+            Sistema de gestión e inventario
           </h1>
+          {panelActivo && (
+            <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${roleInfo.color}`}>
+              <RoleIcon className="w-3 h-3" />
+              <span>{roleInfo.label}</span>
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Lado derecho: Información de usuario, rol activo y acciones */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        {/* Badge de Panel Activo */}
-        <div
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ring-1 ${panelInfo.style} shadow-xs`}
+      {/* Lado derecho: Cápsula de Usuario interactiva */}
+      <div className="relative" ref={menuRef}>
+        <button
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-[#F3F1EA] border border-transparent hover:border-slate-200 transition-all cursor-pointer group"
         >
-          <PanelIcon className="w-3.5 h-3.5 shrink-0" />
-          <span>{panelInfo.label}</span>
-        </div>
+          <div className="text-right hidden sm:block">
+            <p className="text-xs font-bold text-[#0B0E0C] group-hover:text-[#063D2A] transition-colors leading-tight">
+              {nombreCompleto}
+            </p>
+            <p className="text-[11px] text-slate-500 font-medium">
+              {perfilActivo?.nombre || (panelActivo ? roleInfo.label : "Supervisor")}
+            </p>
+          </div>
 
-        {/* Botón para volver al Inicio si se encuentra dentro de un panel */}
-        {panelActivo && (
-          <button
-            onClick={handleVolverInicio}
-            title="Volver al Dashboard Inicial para cambiar de panel"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors"
-          >
-            <Home className="w-3.5 h-3.5 text-indigo-600" />
-            <span className="hidden md:inline">Inicio / Paneles</span>
-          </button>
-        )}
-
-        {/* Chip de usuario */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-indigo-500/20">
+          {/* Avatar Circular con iniciales en Verde Oscuro (#063D2A) */}
+          <div className="w-10 h-10 rounded-full bg-[#063D2A] text-white font-extrabold text-xs flex items-center justify-center shadow-md shadow-[#063D2A]/20 border-2 border-[#28D978] transition-transform group-hover:scale-105">
             {iniciales}
           </div>
-          <div className="hidden lg:block text-left">
-            <p className="text-xs font-bold text-slate-800 leading-tight">
-              {usuario?.nombres} {usuario?.apellidoPaterno}
-            </p>
-            <p className="text-[11px] text-slate-500 truncate max-w-[150px]">
-              {usuario?.correoElectronico}
-            </p>
-          </div>
-        </div>
 
-        {/* Botón Cerrar Sesión */}
-        <button
-          onClick={handleLogout}
-          title="Cerrar sesión"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200/80 rounded-lg transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="hidden sm:inline">Salir</span>
+          <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${dropdownOpen ? "rotate-180 text-[#063D2A]" : ""}`} />
         </button>
+
+        {/* Popover desplegable flotante estilo Barbarian */}
+        {dropdownOpen && (
+          <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+            {/* Header del Popover */}
+            <div className="flex items-center gap-3 pb-3.5 border-b border-slate-100">
+              <div className="w-11 h-11 rounded-full bg-[#063D2A] text-white font-black text-sm flex items-center justify-center shadow-md border-2 border-[#28D978]">
+                {iniciales}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-xs font-bold text-[#0B0E0C] truncate">
+                  {nombreCompleto}
+                </p>
+                <p className="text-[11px] text-slate-500 truncate">
+                  {usuario?.correoElectronico || "rdiaz@gmail.com"}
+                </p>
+                <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#28D978]/20 text-[#063D2A]">
+                  {perfilActivo?.nombre || "Usuario Activo"}
+                </span>
+              </div>
+            </div>
+
+            {/* Acciones */}
+            <div className="py-2 space-y-1">
+              {panelActivo && (
+                <button
+                  onClick={handleVolverInicio}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#063D2A] hover:bg-[#F3F1EA] rounded-xl transition-colors cursor-pointer"
+                >
+                  <Home className="w-4 h-4 text-[#063D2A]" />
+                  <span>Volver a Inicio / Paneles</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setDropdownOpen(false);
+                  navigate("/home/opciones-menu");
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#063D2A] hover:bg-[#F3F1EA] rounded-xl transition-colors cursor-pointer"
+              >
+                <Settings className="w-4 h-4 text-slate-500" />
+                <span>Configuración de Menú</span>
+              </button>
+            </div>
+
+            {/* Salida */}
+            <div className="pt-2 border-t border-slate-100">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 text-rose-500" />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
