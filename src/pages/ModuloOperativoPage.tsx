@@ -43,6 +43,8 @@ export const ModuloOperativoPage: React.FC = () => {
   const navigate = useNavigate();
   const { usuario, perfilActivo } = useAuth();
   const path = location.pathname.toLowerCase();
+  const currentUserId = usuario?.idUsuario ?? (usuario as any)?.id_usuario;
+  const esMiembroEquipo = perfilActivo?.idPerfil === 3;
 
   // Estados de datos
   const [items, setItems] = useState<any[]>([]);
@@ -181,16 +183,21 @@ export const ModuloOperativoPage: React.FC = () => {
       if (path.includes("movimientos") || path.includes("reportes")) {
         const res = await api.get("/movimientos");
         if (res.data.success) {
-          setMovimientos(res.data.movimientos || []);
-          if (res.data.movimientos?.length > 0 && !selectedMovId) {
-            const primerMov = res.data.movimientos[0];
-            setSelectedMovId(String(primerMov.idMovimiento));
-            setFormEditMov({
-              motivoMovimiento: primerMov.motivoMovimiento || "",
-              localRelacionado: primerMov.localRelacionado || "",
-              fechaMovimiento: primerMov.fechaMovimiento || "",
-              observacion: primerMov.observacion || "",
-            });
+          const rawMovs = res.data.movimientos || [];
+          setMovimientos(rawMovs);
+          if (rawMovs.length > 0 && !selectedMovId) {
+            const primerMov = esMiembroEquipo
+              ? rawMovs.find((x: any) => Number(x.usuarioRegistro) === Number(currentUserId))
+              : rawMovs[0];
+            if (primerMov) {
+              setSelectedMovId(String(primerMov.idMovimiento));
+              setFormEditMov({
+                motivoMovimiento: primerMov.motivoMovimiento || "",
+                localRelacionado: primerMov.localRelacionado || "",
+                fechaMovimiento: primerMov.fechaMovimiento || "",
+                observacion: primerMov.observacion || "",
+              });
+            }
           }
         }
       }
@@ -349,6 +356,10 @@ export const ModuloOperativoPage: React.FC = () => {
   // 2. Guardar Ajuste de Stock
   const handleGuardarAjusteStock = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (esMiembroEquipo) {
+      setMensajeError("Acceso no habilitado: El ajuste de stock no está permitido para Miembros de equipo.");
+      return;
+    }
     if (!formStock.idProducto || !formStock.nuevoStock) {
       setMensajeError("Por favor seleccione un producto e ingrese el nuevo stock.");
       return;
@@ -400,6 +411,11 @@ export const ModuloOperativoPage: React.FC = () => {
     e.preventDefault();
     if (!selectedMovId) {
       setMensajeError("Debe seleccionar un movimiento a editar.");
+      return;
+    }
+    const movAEditar = movimientos.find((x) => String(x.idMovimiento) === String(selectedMovId));
+    if (esMiembroEquipo && movAEditar && Number(movAEditar.usuarioRegistro) !== Number(currentUserId)) {
+      setMensajeError("Acceso denegado: Solo puedes editar movimientos que tú mismo hayas registrado.");
       return;
     }
     try {
@@ -463,6 +479,10 @@ export const ModuloOperativoPage: React.FC = () => {
   // 5. Registrar Solicitud
   const handleGuardarSolicitud = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (esMiembroEquipo) {
+      setMensajeError("Acceso restringido: Los miembros de equipo no tienen permisos para emitir solicitudes de compra.");
+      return;
+    }
     if (!formSolicitud.idProducto || !formSolicitud.cantidad) {
       setMensajeError("Seleccione un producto e ingrese la cantidad a solicitar.");
       return;
@@ -484,6 +504,10 @@ export const ModuloOperativoPage: React.FC = () => {
   // 5.1 Actualizar Solicitud
   const handleActualizarSolicitud = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (esMiembroEquipo) {
+      setMensajeError("Acceso restringido: Los miembros de equipo no tienen permisos para modificar solicitudes de compra.");
+      return;
+    }
     if (!selectedSolicitudId) {
       setMensajeError("Debe seleccionar una solicitud a modificar.");
       return;
@@ -924,63 +948,75 @@ export const ModuloOperativoPage: React.FC = () => {
             </div>
           </div>
 
-          <form onSubmit={handleGuardarAjusteStock} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Seleccionar Producto a Ajustar *</label>
-              <select
-                required
-                value={formStock.idProducto}
-                onChange={(e) => setFormStock({ ...formStock, idProducto: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-              >
-                <option value="">-- Selecciona un producto del almacén --</option>
-                {items.map((it) => (
-                  <option key={it.idProducto} value={it.idProducto}>
-                    [{it.codigo}] {it.nombre} ({it.unidad}) &mdash; Stock actual: {it.stockActual ?? it.stockMinimo}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {esMiembroEquipo && (
+            <div className="p-4 mb-6 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-amber-900 text-xs font-semibold">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nuevo Stock Físico *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  placeholder="Ej. 25.50"
-                  value={formStock.nuevoStock}
-                  onChange={(e) => setFormStock({ ...formStock, nuevoStock: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                />
+                <p className="font-bold">Acceso No Habilitado para Miembro de Equipo</p>
+                <p className="text-amber-700">El ajuste manual y corrección directa de existencias está deshabilitado para tu perfil. Solo personal técnico o gerencial puede ajustar el stock.</p>
               </div>
+            </div>
+          )}
 
+          <form onSubmit={handleGuardarAjusteStock} className="space-y-4">
+            <fieldset disabled={esMiembroEquipo} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo del Ajuste *</label>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Seleccionar Producto a Ajustar *</label>
                 <select
-                  value={formStock.motivo}
-                  onChange={(e) => setFormStock({ ...formStock, motivo: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  required
+                  value={formStock.idProducto}
+                  onChange={(e) => setFormStock({ ...formStock, idProducto: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <option value="Corrección por inventario físico">Corrección por inventario físico</option>
-                  <option value="Merma detectada en almacén">Merma detectada en almacén</option>
-                  <option value="Devolución de material">Devolución de material</option>
-                  <option value="Ajuste inicial">Ajuste inicial</option>
+                  <option value="">-- Selecciona un producto del almacén --</option>
+                  {items.map((it) => (
+                    <option key={it.idProducto} value={it.idProducto}>
+                      [{it.codigo}] {it.nombre} ({it.unidad}) &mdash; Stock actual: {it.stockActual ?? it.stockMinimo}
+                    </option>
+                  ))}
                 </select>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Observaciones / Justificación</label>
-              <textarea
-                rows={2}
-                placeholder="Explica la causa del ajuste de stock..."
-                value={formStock.observacion}
-                onChange={(e) => setFormStock({ ...formStock, observacion: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nuevo Stock Físico *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="Ej. 25.50"
+                    value={formStock.nuevoStock}
+                    onChange={(e) => setFormStock({ ...formStock, nuevoStock: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo del Ajuste *</label>
+                  <select
+                    value={formStock.motivo}
+                    onChange={(e) => setFormStock({ ...formStock, motivo: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <option value="Corrección por inventario físico">Corrección por inventario físico</option>
+                    <option value="Merma detectada en almacén">Merma detectada en almacén</option>
+                    <option value="Devolución de material">Devolución de material</option>
+                    <option value="Ajuste inicial">Ajuste inicial</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Observaciones / Justificación</label>
+                <textarea
+                  rows={2}
+                  placeholder="Explica la causa del ajuste de stock..."
+                  value={formStock.observacion}
+                  onChange={(e) => setFormStock({ ...formStock, observacion: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+            </fieldset>
 
             <div className="pt-4 flex justify-end gap-3">
               <button
@@ -992,11 +1028,21 @@ export const ModuloOperativoPage: React.FC = () => {
               </button>
               <button
                 type="submit"
-                disabled={guardando}
-                className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md shadow-amber-600/30 flex items-center gap-2"
+                disabled={guardando || esMiembroEquipo}
+                className={`px-6 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center gap-2 ${
+                  esMiembroEquipo
+                    ? "bg-slate-400 cursor-not-allowed opacity-60 shadow-none"
+                    : "bg-amber-600 hover:bg-amber-700 shadow-amber-600/30"
+                }`}
               >
                 <Save className="w-4 h-4" />
-                <span>{guardando ? "Ajustando..." : "Guardar Ajuste en Base de Datos"}</span>
+                <span>
+                  {esMiembroEquipo
+                    ? "Ajuste Deshabilitado"
+                    : guardando
+                    ? "Ajustando..."
+                    : "Guardar Ajuste en Base de Datos"}
+                </span>
               </button>
             </div>
           </form>
@@ -1133,27 +1179,65 @@ export const ModuloOperativoPage: React.FC = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Formulario: Editar Movimiento de Almacén</h2>
-              <p className="text-xs text-slate-500">Corrige el motivo, fecha u observaciones de una transacción previa.</p>
+              <p className="text-xs text-slate-500">
+                {esMiembroEquipo
+                  ? "Solo puedes modificar transacciones de kardex registradas por tu propio usuario."
+                  : "Corrige el motivo, fecha u observaciones de una transacción previa."}
+              </p>
             </div>
           </div>
 
-          <div className="mb-5">
-            <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-              Seleccionar Movimiento a Editar *
-            </label>
-            <select
-              value={selectedMovId}
-              onChange={(e) => handleSelectEditMov(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-sky-50/50 border border-sky-200 rounded-xl text-sm font-semibold text-slate-800"
-            >
-              <option value="">-- Selecciona una transacción de kardex --</option>
-              {movimientos.map((m) => (
-                <option key={m.idMovimiento} value={m.idMovimiento}>
-                  [{m.codigo}] {m.tipoMovimiento} - {m.motivoMovimiento} ({m.fechaMovimiento})
-                </option>
-              ))}
-            </select>
-          </div>
+          {esMiembroEquipo && (
+            <div className="p-4 mb-5 bg-sky-50/70 border border-sky-200 rounded-2xl flex items-center gap-3 text-sky-900 text-xs font-medium">
+              <Shield className="w-5 h-5 text-sky-600 shrink-0" />
+              <span>Restricción de seguridad activa: Únicamente puedes visualizar y modificar los movimientos registrados por tu usuario.</span>
+            </div>
+          )}
+
+          {(() => {
+            const movimientosDisponibles = esMiembroEquipo
+              ? movimientos.filter((m) => Number(m.usuarioRegistro) === Number(currentUserId))
+              : movimientos;
+
+            if (esMiembroEquipo && movimientosDisponibles.length === 0) {
+              return (
+                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-500 text-sm space-y-3">
+                  <AlertCircle className="w-10 h-10 mx-auto text-amber-500" />
+                  <p className="font-bold text-slate-800">No tienes movimientos propios registrados para editar</p>
+                  <p className="text-xs text-slate-500">
+                    Solo puedes editar transacciones de kardex que tú mismo hayas registrado. No puedes modificar movimientos registrados por otros usuarios.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/home/movimientos")}
+                    className="mt-2 px-5 py-2.5 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-700"
+                  >
+                    Volver a Entradas y Salidas
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <>
+                <div className="mb-5">
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                    Seleccionar Movimiento a Editar *
+                  </label>
+                  <select
+                    value={selectedMovId}
+                    onChange={(e) => handleSelectEditMov(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-sky-50/50 border border-sky-200 rounded-xl text-sm font-semibold text-slate-800"
+                  >
+                    <option value="">-- Selecciona una transacción de kardex --</option>
+                    {movimientosDisponibles.map((m) => (
+                      <option key={m.idMovimiento} value={m.idMovimiento}>
+                        [{m.codigo}] {m.tipoMovimiento} - {m.motivoMovimiento} ({m.fechaMovimiento})
+                        {esMiembroEquipo ? " (Registrado por ti)" : (m.usuarioRegistro ? ` [Usuario #${m.usuarioRegistro}]` : "")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
           {selectedMovId ? (
             <form onSubmit={handleActualizarMovimiento} className="space-y-4">
@@ -1214,6 +1298,9 @@ export const ModuloOperativoPage: React.FC = () => {
               Selecciona un movimiento del selector superior para cargar y modificar sus datos.
             </div>
           )}
+              </>
+            );
+          })()}
         </div>
       )}
 
@@ -1475,48 +1562,60 @@ export const ModuloOperativoPage: React.FC = () => {
             </div>
           </div>
 
+          {esMiembroEquipo && (
+            <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-2xl flex items-center gap-3 text-purple-900 text-xs font-semibold">
+              <AlertCircle className="w-5 h-5 text-purple-600 shrink-0" />
+              <div>
+                <p className="font-bold">Acceso Restringido para Miembro de Equipo</p>
+                <p className="text-purple-700">La emisión de nuevas solicitudes de compra está restringida. Solo personal técnico y gerencial puede generar solicitudes.</p>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleGuardarSolicitud} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Producto Requerido *</label>
-              <select
-                required
-                value={formSolicitud.idProducto}
-                onChange={(e) => setFormSolicitud({ ...formSolicitud, idProducto: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-              >
-                <option value="">-- Selecciona el producto a solicitar --</option>
-                {items.map((it) => (
-                  <option key={it.idProducto} value={it.idProducto}>
-                    [{it.codigo}] {it.nombre} ({it.unidad})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <fieldset disabled={esMiembroEquipo} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad a Solicitar *</label>
-                <input
-                  type="number"
-                  step="0.01"
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Producto Requerido *</label>
+                <select
                   required
-                  placeholder="Ej. 50.00"
-                  value={formSolicitud.cantidad}
-                  onChange={(e) => setFormSolicitud({ ...formSolicitud, cantidad: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                />
+                  value={formSolicitud.idProducto}
+                  onChange={(e) => setFormSolicitud({ ...formSolicitud, idProducto: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <option value="">-- Selecciona el producto a solicitar --</option>
+                  {items.map((it) => (
+                    <option key={it.idProducto} value={it.idProducto}>
+                      [{it.codigo}] {it.nombre} ({it.unidad})
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo / Justificación</label>
-                <input
-                  type="text"
-                  value={formSolicitud.motivo}
-                  onChange={(e) => setFormSolicitud({ ...formSolicitud, motivo: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad a Solicitar *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="Ej. 50.00"
+                    value={formSolicitud.cantidad}
+                    onChange={(e) => setFormSolicitud({ ...formSolicitud, cantidad: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo / Justificación</label>
+                  <input
+                    type="text"
+                    value={formSolicitud.motivo}
+                    onChange={(e) => setFormSolicitud({ ...formSolicitud, motivo: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
+                </div>
               </div>
-            </div>
+            </fieldset>
 
             <div className="pt-4 flex justify-end gap-3">
               <button
@@ -1528,11 +1627,21 @@ export const ModuloOperativoPage: React.FC = () => {
               </button>
               <button
                 type="submit"
-                disabled={guardando}
-                className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-600/30 flex items-center gap-2"
+                disabled={guardando || esMiembroEquipo}
+                className={`px-6 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center gap-2 ${
+                  esMiembroEquipo
+                    ? "bg-slate-400 cursor-not-allowed opacity-60 shadow-none"
+                    : "bg-purple-600 hover:bg-purple-700 shadow-purple-600/30"
+                }`}
               >
                 <Save className="w-4 h-4" />
-                <span>{guardando ? "Emitiendo..." : "Emitir Solicitud en Base de Datos"}</span>
+                <span>
+                  {esMiembroEquipo
+                    ? "Acceso Restringido"
+                    : guardando
+                    ? "Emitiendo..."
+                    : "Emitir Solicitud en Base de Datos"}
+                </span>
               </button>
             </div>
           </form>
@@ -1554,13 +1663,22 @@ export const ModuloOperativoPage: React.FC = () => {
                 <p className="text-xs text-slate-500">Visualiza la información completa y los ítems requeridos.</p>
               </div>
             </div>
-            <button
-              onClick={() => navigate("/home/solicitudes/editar")}
-              className="px-4 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center gap-2"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Ir a Editar Solicitud</span>
-            </button>
+            {esMiembroEquipo ? (
+              <button
+                onClick={() => navigate("/home/solicitudes")}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Volver a Solicitudes
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/home/solicitudes/editar")}
+                className="px-4 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center gap-2"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Ir a Editar Solicitud</span>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -1649,14 +1767,25 @@ export const ModuloOperativoPage: React.FC = () => {
             </div>
           </div>
 
+          {esMiembroEquipo && (
+            <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-2xl flex items-center gap-3 text-purple-900 text-xs font-semibold">
+              <AlertCircle className="w-5 h-5 text-purple-600 shrink-0" />
+              <div>
+                <p className="font-bold">Acceso Restringido para Miembro de Equipo</p>
+                <p className="text-purple-700">La modificación de solicitudes de compra está restringida para tu rol. Solo personal técnico o gerencial puede cambiar el estado de solicitudes.</p>
+              </div>
+            </div>
+          )}
+
           <div className="mb-5">
             <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
               Seleccionar Solicitud a Editar *
             </label>
             <select
+              disabled={esMiembroEquipo}
               value={selectedSolicitudId}
               onChange={(e) => handleSelectEditSolicitud(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-purple-50/50 border border-purple-200 rounded-xl text-sm font-semibold text-slate-800"
+              className="w-full px-3.5 py-2.5 bg-purple-50/50 border border-purple-200 rounded-xl text-sm font-semibold text-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <option value="">-- Selecciona una solicitud --</option>
               {solicitudes.map((s) => (
@@ -1669,32 +1798,34 @@ export const ModuloOperativoPage: React.FC = () => {
 
           {selectedSolicitudId ? (
             <form onSubmit={handleActualizarSolicitud} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Estado de la Solicitud *</label>
-                  <select
-                    value={formEditSolicitud.estadoOrdenCompra}
-                    onChange={(e) => setFormEditSolicitud({ ...formEditSolicitud, estadoOrdenCompra: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-purple-900"
-                  >
-                    <option value="PENDIENTE">PENDIENTE (En evaluación)</option>
-                    <option value="APROBADA">🟢 APROBADA (Proceder a compra)</option>
-                    <option value="RECHAZADA">🔴 RECHAZADA (No autorizada)</option>
-                    <option value="ATENDIDA">🔵 ATENDIDA (Mercadería recibida)</option>
-                  </select>
-                </div>
+              <fieldset disabled={esMiembroEquipo} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Estado de la Solicitud *</label>
+                    <select
+                      value={formEditSolicitud.estadoOrdenCompra}
+                      onChange={(e) => setFormEditSolicitud({ ...formEditSolicitud, estadoOrdenCompra: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-purple-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option value="PENDIENTE">PENDIENTE (En evaluación)</option>
+                      <option value="APROBADA">🟢 APROBADA (Proceder a compra)</option>
+                      <option value="RECHAZADA">🔴 RECHAZADA (No autorizada)</option>
+                      <option value="ATENDIDA">🔵 ATENDIDA (Mercadería recibida)</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad Ajustada</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formEditSolicitud.cantidad}
-                    onChange={(e) => setFormEditSolicitud({ ...formEditSolicitud, cantidad: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold"
-                  />
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad Ajustada</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formEditSolicitud.cantidad}
+                      onChange={(e) => setFormEditSolicitud({ ...formEditSolicitud, cantidad: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
                 </div>
-              </div>
+              </fieldset>
 
               <div className="pt-4 flex justify-end gap-3">
                 <button
@@ -1706,11 +1837,21 @@ export const ModuloOperativoPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={guardando}
-                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-600/30 flex items-center gap-2"
+                  disabled={guardando || esMiembroEquipo}
+                  className={`px-6 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center gap-2 ${
+                    esMiembroEquipo
+                      ? "bg-slate-400 cursor-not-allowed opacity-60 shadow-none"
+                      : "bg-purple-600 hover:bg-purple-700 shadow-purple-600/30"
+                  }`}
                 >
                   <Save className="w-4 h-4" />
-                  <span>{guardando ? "Guardando..." : "Actualizar Solicitud"}</span>
+                  <span>
+                    {esMiembroEquipo
+                      ? "Acceso Restringido"
+                      : guardando
+                      ? "Guardando..."
+                      : "Actualizar Solicitud"}
+                  </span>
                 </button>
               </div>
             </form>
@@ -1823,9 +1964,9 @@ export const ModuloOperativoPage: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 6. REALIZAR INVENTARIO (/home/inventario/realizar) */}
+      {/* 6. REALIZAR INVENTARIO (/home/inventario-realizar) */}
       {/* ========================================================================= */}
-      {path.includes("inventario/realizar") && (
+      {(path.includes("inventario-realizar") || path.includes("inventario/realizar")) && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
             <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
@@ -2004,7 +2145,7 @@ export const ModuloOperativoPage: React.FC = () => {
               <h2 className="text-xl font-bold text-slate-900">Gestión de Stock ({stockList.length} ítems auditados)</h2>
               <p className="text-xs text-slate-500">Existencias actuales sincronizadas directamente con la base de datos PostgreSQL.</p>
             </div>
-            {perfilActivo?.idPerfil !== 3 && (
+            {!esMiembroEquipo && (
               <button
                 onClick={() => navigate("/home/stock/editar")}
                 className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
@@ -2048,21 +2189,31 @@ export const ModuloOperativoPage: React.FC = () => {
                       )}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          setFormStock({
-                            idProducto: String(st.idProducto),
-                            nuevoStock: String(st.stockActual),
-                            motivo: "Corrección por inventario físico",
-                            observacion: "",
-                          });
-                          navigate("/home/stock/editar");
-                        }}
-                        title="Ajustar stock de este ítem"
-                        className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg border border-amber-200"
-                      >
-                        <Sliders className="w-4 h-4" />
-                      </button>
+                      {esMiembroEquipo ? (
+                        <button
+                          disabled
+                          title="Ajuste de stock no habilitado para miembros de equipo"
+                          className="p-1.5 text-slate-300 bg-slate-50 rounded-lg border border-slate-200 cursor-not-allowed opacity-50"
+                        >
+                          <Sliders className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setFormStock({
+                              idProducto: String(st.idProducto),
+                              nuevoStock: String(st.stockActual),
+                              motivo: "Corrección por inventario físico",
+                              observacion: "",
+                            });
+                            navigate("/home/stock/editar");
+                          }}
+                          title="Ajustar stock de este ítem"
+                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg border border-amber-200"
+                        >
+                          <Sliders className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -2113,7 +2264,14 @@ export const ModuloOperativoPage: React.FC = () => {
               <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
                 {movimientos.map((m) => (
                   <tr key={m.idMovimiento} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-sky-600">{m.codigo}</td>
+                    <td className="py-3 px-4 font-bold text-sky-600">
+                      <span>{m.codigo}</span>
+                      {Number(m.usuarioRegistro) === Number(currentUserId) && (
+                        <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-sky-100 text-sky-700">
+                          Propio
+                        </span>
+                      )}
+                    </td>
                     <td className="py-3 px-4 font-bold">
                       <span className={`px-2 py-0.5 rounded-full text-[11px] ${m.tipoMovimiento === "ENTRADA" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
                         {m.tipoMovimiento}
@@ -2129,16 +2287,33 @@ export const ModuloOperativoPage: React.FC = () => {
                       )}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          handleSelectEditMov(String(m.idMovimiento));
-                          navigate("/home/movimientos/editar");
-                        }}
-                        title="Editar movimiento"
-                        className="p-1.5 rounded-lg text-sky-600 hover:bg-sky-50 border border-sky-200"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                      {(() => {
+                        const esPropio = Number(m.usuarioRegistro) === Number(currentUserId);
+                        const puedeEditar = !esMiembroEquipo || esPropio;
+                        if (!puedeEditar) {
+                          return (
+                            <button
+                              disabled
+                              title="Solo puedes editar movimientos registrados por ti mismo"
+                              className="p-1.5 rounded-lg text-slate-300 border border-slate-200 cursor-not-allowed opacity-40"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          );
+                        }
+                        return (
+                          <button
+                            onClick={() => {
+                              handleSelectEditMov(String(m.idMovimiento));
+                              navigate("/home/movimientos/editar");
+                            }}
+                            title={esMiembroEquipo ? "Editar este movimiento (registrado por ti)" : "Editar movimiento"}
+                            className="p-1.5 rounded-lg text-sky-600 hover:bg-sky-50 border border-sky-200"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))}
@@ -2236,20 +2411,24 @@ export const ModuloOperativoPage: React.FC = () => {
                 <Eye className="w-4 h-4" />
                 <span>Ver Detalle</span>
               </button>
-              <button
-                onClick={() => navigate("/home/solicitudes/editar")}
-                className="px-4 py-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center gap-2"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Editar Solicitud</span>
-              </button>
-              <button
-                onClick={() => navigate("/home/solicitudes/registrar")}
-                className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Nueva Solicitud</span>
-              </button>
+              {!esMiembroEquipo && (
+                <>
+                  <button
+                    onClick={() => navigate("/home/solicitudes/editar")}
+                    className="px-4 py-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center gap-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Editar Solicitud</span>
+                  </button>
+                  <button
+                    onClick={() => navigate("/home/solicitudes/registrar")}
+                    className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Nueva Solicitud</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -2292,16 +2471,18 @@ export const ModuloOperativoPage: React.FC = () => {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => {
-                          handleSelectEditSolicitud(String(sol.idOrdenCompra));
-                          navigate("/home/solicitudes/editar");
-                        }}
-                        title="Modificar estado"
-                        className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 border border-purple-200"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                      {!esMiembroEquipo && (
+                        <button
+                          onClick={() => {
+                            handleSelectEditSolicitud(String(sol.idOrdenCompra));
+                            navigate("/home/solicitudes/editar");
+                          }}
+                          title="Modificar estado"
+                          className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 border border-purple-200"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

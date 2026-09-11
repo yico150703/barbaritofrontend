@@ -424,7 +424,7 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
             </Link>
 
             <Link
-              to="/home/inventario/realizar"
+              to="/home/inventario-realizar"
               className="p-4 rounded-xl border border-slate-200 hover:border-amber-400 bg-slate-50/60 hover:bg-amber-50/30 transition-all flex items-center justify-between group"
             >
               <div className="flex items-center gap-3">
@@ -614,7 +614,7 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
           </Link>
 
           <Link
-            to="/home/inventario/realizar"
+            to="/home/inventario-realizar"
             className="p-6 rounded-2xl border border-purple-200/80 bg-gradient-to-b from-purple-50/40 to-white hover:border-purple-400 hover:shadow-md transition-all group flex flex-col justify-between"
           >
             <div>
