@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { Perfil, Usuario } from "../types";
 import { TablaGenerica, ColumnDef } from "../components/TablaGenerica";
 import { ModalGenerico } from "../components/ModalGenerico";
 import { FormField, FormActions } from "../components/FormularioGenerico";
-import { Users, UserPlus, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
+import { Users, UserPlus, CheckCircle2, AlertTriangle, Shield, Edit3, Eye, ArrowRight } from "lucide-react";
 
 export const UsuariosPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isEditMode = location.pathname.toLowerCase().includes("editar");
+
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [perfilesDisponibles, setPerfilesDisponibles] = useState<Perfil[]>([]);
   const [loading, setLoading] = useState(true);
@@ -253,21 +258,63 @@ export const UsuariosPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Encabezado con estado del modo */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
             <Users className="w-4 h-4" />
-            <span>Módulo de Gestión</span>
+            <span>Módulo de Gestión de Usuarios</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${isEditMode ? "bg-amber-100 text-amber-900 border border-amber-300" : "bg-emerald-100 text-emerald-800 border border-emerald-300"}`}>
+              {isEditMode ? "Modo Edición Activado" : "Modo Solo Lectura"}
+            </span>
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            Mantenimiento de Usuarios
+            {isEditMode ? "Editar y Modificar Usuarios" : "Directorio de Usuarios Registrados"}
           </h2>
-          <p className="text-sm text-slate-500">
-            Administra los usuarios del sistema, sus accesos y asignación de múltiples perfiles.
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            {isEditMode
+              ? "Usa el botón de edición al lado de cada usuario para modificar sus datos, roles o contraseña."
+              : "Vista general de cuentas. Para habilitar la edición, haz clic en el submenú 'Editar usuario'."}
           </p>
         </div>
+
+        <div>
+          {isEditMode ? (
+            <button
+              onClick={() => navigate("/home/usuarios")}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all"
+            >
+              <Eye className="w-4 h-4 text-slate-500" />
+              <span>Ver Solo Directorio</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/home/usuarios/editar")}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs shadow-amber-500/30 transition-all"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Ir a Editar Usuarios</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Alerta informativa en modo solo lectura */}
+      {!isEditMode && (
+        <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl flex items-center justify-between text-xs text-blue-900">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Estás viendo el listado de usuarios en <strong>solo lectura</strong>. Los botones de edición están deshabilitados.</span>
+          </div>
+          <button
+            onClick={() => navigate("/home/usuarios/editar")}
+            className="text-blue-700 hover:text-blue-900 font-bold underline shrink-0 ml-2"
+          >
+            Habilitar opciones de edición
+          </button>
+        </div>
+      )}
 
       {/* Tabla con Búsqueda y Paginación */}
       <TablaGenerica
@@ -280,10 +327,10 @@ export const UsuariosPage: React.FC = () => {
         totalPages={totalPages}
         totalRecords={totalRecords}
         onPageChange={(p) => setPage(p)}
-        onNuevo={handleOpenNuevo}
+        onNuevo={isEditMode ? handleOpenNuevo : undefined}
         nuevoLabel="Nuevo Usuario"
-        onEdit={handleOpenEdit}
-        onDelete={(u) => setDeletingUser(u)}
+        onEdit={isEditMode ? handleOpenEdit : undefined}
+        onDelete={isEditMode ? (u) => setDeletingUser(u) : undefined}
         loading={loading}
         emptyText="No se encontraron usuarios registrados."
         keyExtractor={(item) => item.idUsuario}
