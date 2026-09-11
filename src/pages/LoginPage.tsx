@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
           "✅ ¡Base de datos inicializada con éxito! Tablas y datos de Barbarian creados. Ya puedes ingresar."
         );
         setCorreo("crodriguez@gmail.com");
-        setClave("password123");
+        setClave("Tec123*");
       } else {
         setError(res.data?.mensaje || "No se pudo inicializar la base de datos.");
       }
@@ -72,9 +72,9 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const llenarDemo = (emailDemo: string) => {
+  const llenarDemo = (emailDemo: string, passDemo: string) => {
     setCorreo(emailDemo);
-    setClave("password123");
+    setClave(passDemo);
     setError(null);
     setInitSuccess(null);
   };
@@ -295,9 +295,9 @@ export const LoginPage: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 text-center">
               <button
                 type="button"
-                onClick={() => llenarDemo("crodriguez@gmail.com")}
+                onClick={() => llenarDemo("crodriguez@gmail.com", "Tec123*")}
                 className="px-2 py-1.5 rounded-lg bg-[#022A1E]/5 hover:bg-[#022A1E]/15 border border-[#063D2A]/20 text-[11px] font-bold text-[#063D2A] transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
-                title="Carlos Rodríguez - Técnico (Superusuario)"
+                title="Carlos Rodriguez Torres - Técnico"
               >
                 <Wrench className="w-3.5 h-3.5 text-[#063D2A]" />
                 <span>Técnico</span>
@@ -305,9 +305,9 @@ export const LoginPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => llenarDemo("rdiaz@gmail.com")}
+                onClick={() => llenarDemo("jrios@gmail.com", "Ger123*")}
                 className="px-2 py-1.5 rounded-lg bg-[#022A1E]/5 hover:bg-[#022A1E]/15 border border-[#063D2A]/20 text-[11px] font-bold text-[#063D2A] transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
-                title="Roberto Díaz - Administrador / Gerente"
+                title="José Ríos Martínez - Gerente"
               >
                 <Shield className="w-3.5 h-3.5 text-[#063D2A]" />
                 <span>Gerente</span>
@@ -315,17 +315,18 @@ export const LoginPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => llenarDemo("acastro@gmail.com")}
+                onClick={() => llenarDemo("rdiaz@gmail.com", "Equ123*")}
                 className="px-2 py-1.5 rounded-lg bg-[#022A1E]/5 hover:bg-[#022A1E]/15 border border-[#063D2A]/20 text-[11px] font-bold text-[#063D2A] transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
-                title="Ana Castro - Miembro de Equipo"
+                title="Roberto Díaz Guerrero - Miembro de Equipo"
               >
                 <Users className="w-3.5 h-3.5 text-[#063D2A]" />
                 <span>Miembro</span>
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 text-center mt-2 font-mono">
-              Clave para todos: <strong className="text-slate-600 font-bold">password123</strong>
-            </p>
+            <div className="text-[10px] text-slate-500 text-center mt-2.5 font-mono space-y-0.5">
+              <p>Técnico: <strong className="text-slate-700 font-bold">Tec123*</strong> &bull; Gerente: <strong className="text-slate-700 font-bold">Ger123*</strong></p>
+              <p>Miembro: <strong className="text-slate-700 font-bold">Equ123*</strong></p>
+            </div>
           </div>
         </div>
       </div>
