@@ -152,7 +152,7 @@ export const ModuloOperativoPage: React.FC = () => {
   // Detalle de Orden de Compra seleccionada (/home/ordenes-compra/detalle)
   const [detalleOrdenId, setDetalleOrdenId] = useState<string>("");
 
-  // Formulario 6: Realizar Inventario (/home/inventario/realizar)
+  // Formulario 6: Realizar Inventario (/home/inventario-realizar)
   const [formInventario, setFormInventario] = useState({
     fechaInventario: new Date().toISOString().split("T")[0],
     idProducto: "",
@@ -1974,7 +1974,7 @@ export const ModuloOperativoPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 6. REALIZAR INVENTARIO (/home/inventario-realizar) */}
       {/* ========================================================================= */}
-      {(path.includes("inventario-realizar") || path.includes("inventario/realizar")) && (
+      {path.includes("inventario-realizar") && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
             <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">

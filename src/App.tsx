@@ -37,7 +37,9 @@ export default function App() {
               <Route path="usuarios" element={<UsuariosPage />} />
               <Route path="usuarios/*" element={<UsuariosPage />} />
               <Route path="perfiles" element={<PerfilesPage />} />
-              <Route path="opciones-menu" element={<OpcionesMenuPage />} />
+              {/* Redirección de URL errónea inventario/realizar hacia la URL correcta inventario-realizar */}
+              <Route path="inventario/realizar" element={<Navigate to="/home/inventario-realizar" replace />} />
+              <Route path="inventario" element={<Navigate to="/home/inventario-realizar" replace />} />
               <Route path="*" element={<ModuloOperativoPage />} />
             </Route>
 
@@ -54,6 +56,8 @@ export default function App() {
               <Route path="usuarios/*" element={<UsuariosPage />} />
               <Route path="perfiles" element={<PerfilesPage />} />
               <Route path="opciones-menu" element={<OpcionesMenuPage />} />
+              <Route path="inventario/realizar" element={<Navigate to="/dashboard/inventario-realizar" replace />} />
+              <Route path="inventario" element={<Navigate to="/dashboard/inventario-realizar" replace />} />
               <Route path="*" element={<ModuloOperativoPage />} />
             </Route>
           </Route>
