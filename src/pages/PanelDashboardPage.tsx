@@ -21,6 +21,7 @@ import {
   Warehouse,
   ShoppingCart,
   UserPlus,
+  Edit3,
 } from "lucide-react";
 
 interface PanelDashboardPageProps {
@@ -549,7 +550,7 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
           <span>Módulos Operativos Asignados</span>
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           <Link
             to="/home/stock"
             className="p-6 rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/40 to-white hover:border-emerald-400 hover:shadow-md transition-all group flex flex-col justify-between"
@@ -588,6 +589,27 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
             </div>
             <div className="pt-4 mt-4 border-t border-sky-100 flex items-center justify-between text-xs font-bold text-sky-600">
               <span>Kardex</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            to="/home/movimientos/editar"
+            className="p-6 rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white hover:border-indigo-400 hover:shadow-md transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-4 shadow-md shadow-indigo-600/20">
+                <Edit3 className="w-6 h-6" />
+              </div>
+              <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-800 transition-colors">
+                Editar Movimiento
+              </h4>
+              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                Modificar y rectificar movimientos de kardex registrados por ti.
+              </p>
+            </div>
+            <div className="pt-4 mt-4 border-t border-indigo-100 flex items-center justify-between text-xs font-bold text-indigo-700">
+              <span>Editar Kardex</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>

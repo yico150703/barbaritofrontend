@@ -110,6 +110,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           modulosPanel = rawMenu.filter((m) => m.idOpcionMenu !== 1 && m.urlMenu !== "/home" && m.urlMenu !== "/dashboard");
         }
 
+        // Asegurar que para miembro de equipo "Entradas y salidas" contenga tanto Registrar como Editar movimiento
+        if (panel === "miembro-equipo") {
+          const itemMov = modulosPanel.find(
+            (m) => m.urlMenu === "/home/movimientos" || m.nombre.toLowerCase().includes("entradas")
+          );
+          if (itemMov) {
+            if (!itemMov.hijos) itemMov.hijos = [];
+            const tieneRegistrar = itemMov.hijos.some((h) => h.urlMenu === "/home/movimientos/registrar");
+            const tieneEditar = itemMov.hijos.some((h) => h.urlMenu === "/home/movimientos/editar");
+            if (!tieneRegistrar) {
+              itemMov.hijos.push({
+                idOpcionMenu: 15,
+                nombre: "Registrar movimiento",
+                urlMenu: "/home/movimientos/registrar",
+                idPadre: itemMov.idOpcionMenu,
+              });
+            }
+            if (!tieneEditar) {
+              itemMov.hijos.push({
+                idOpcionMenu: 16,
+                nombre: "Editar movimiento",
+                urlMenu: "/home/movimientos/editar",
+                idPadre: itemMov.idOpcionMenu,
+              });
+            }
+          }
+        }
+
         // El menú final del panel siempre tiene 'Inicio' al principio + todos los módulos de ese rol
         setMenuTree([OPCION_INICIO, ...modulosPanel]);
       } else {
@@ -153,9 +181,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setPanelActivo(panelDetectado);
         if (panelDetectado) {
           localStorage.setItem("almacen_active_panel", panelDetectado);
+          const idPerfilTarget = getProfileIdForPanel(panelDetectado);
+          const nombrePerfilTarget =
+            panelDetectado === "miembro-equipo"
+              ? "Miembro de equipo"
+              : panelDetectado === "gerencial"
+              ? "Administrador"
+              : "Técnico";
+          const perfilCorrespondiente: Perfil =
+            perfiles.find((p) => p.idPerfil === idPerfilTarget) || {
+              idPerfil: idPerfilTarget,
+              nombre: nombrePerfilTarget,
+              estadoRegistro: 1,
+            };
+          setPerfilActivo(perfilCorrespondiente);
+          localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfilCorrespondiente));
+          localStorage.setItem("almacen_active_profile_id", String(idPerfilTarget));
           await cargarMenuPorPanel(panelDetectado, usuario.idUsuario);
         } else {
           localStorage.removeItem("almacen_active_panel");
+          if (perfiles && perfiles.length > 0) {
+            setPerfilActivo(perfiles[0]);
+            localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfiles[0]));
+            localStorage.setItem("almacen_active_profile_id", String(perfiles[0].idPerfil));
+          }
           setMenuTree([OPCION_INICIO]);
         }
       }
@@ -215,11 +264,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPanelActivo(panel);
     if (!panel) {
       localStorage.removeItem("almacen_active_panel");
+      if (perfiles && perfiles.length > 0) {
+        const principal = perfiles[0];
+        setPerfilActivo(principal);
+        localStorage.setItem("almacen_perfil_activo", JSON.stringify(principal));
+        localStorage.setItem("almacen_active_profile_id", String(principal.idPerfil));
+      }
       setMenuTree([OPCION_INICIO]);
       return;
     }
 
     localStorage.setItem("almacen_active_panel", panel);
+
+    // Sincronizar perfilActivo y almacen_active_profile_id con el panel seleccionado
+    const idPerfilTarget = getProfileIdForPanel(panel);
+    const nombrePerfilTarget =
+      panel === "miembro-equipo"
+        ? "Miembro de equipo"
+        : panel === "gerencial"
+        ? "Administrador"
+        : "Técnico";
+
+    const perfilCorrespondiente: Perfil =
+      perfiles.find((p) => p.idPerfil === idPerfilTarget) || {
+        idPerfil: idPerfilTarget,
+        nombre: nombrePerfilTarget,
+        estadoRegistro: 1,
+      };
+
+    setPerfilActivo(perfilCorrespondiente);
+    localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfilCorrespondiente));
+    localStorage.setItem("almacen_active_profile_id", String(idPerfilTarget));
+
     if (usuario) {
       await cargarMenuPorPanel(panel, usuario.idUsuario);
     }

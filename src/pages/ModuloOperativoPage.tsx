@@ -41,10 +41,10 @@ import {
 export const ModuloOperativoPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { usuario, perfilActivo } = useAuth();
+  const { usuario, perfilActivo, panelActivo } = useAuth();
   const path = location.pathname.toLowerCase();
   const currentUserId = usuario?.idUsuario ?? (usuario as any)?.id_usuario;
-  const esMiembroEquipo = perfilActivo?.idPerfil === 3;
+  const esMiembroEquipo = perfilActivo?.idPerfil === 3 || panelActivo === "miembro-equipo";
 
   // Estados de datos
   const [items, setItems] = useState<any[]>([]);
@@ -1230,12 +1230,20 @@ export const ModuloOperativoPage: React.FC = () => {
                     className="w-full px-3.5 py-2.5 bg-sky-50/50 border border-sky-200 rounded-xl text-sm font-semibold text-slate-800"
                   >
                     <option value="">-- Selecciona una transacción de kardex --</option>
-                    {movimientosDisponibles.map((m) => (
-                      <option key={m.idMovimiento} value={m.idMovimiento}>
-                        [{m.codigo}] {m.tipoMovimiento} - {m.motivoMovimiento} ({m.fechaMovimiento})
-                        {esMiembroEquipo ? " (Registrado por ti)" : (m.usuarioRegistro ? ` [Usuario #${m.usuarioRegistro}]` : "")}
-                      </option>
-                    ))}
+                    {movimientosDisponibles.map((m) => {
+                      const esPropio = Number(m.usuarioRegistro) === Number(currentUserId);
+                      const etiquetaAutor = esPropio
+                        ? ` (Registrado por ti: ${m.usuarioNombre || usuario?.nombres || "Tú"})`
+                        : m.usuarioNombre
+                        ? ` [Registrado por: ${m.usuarioNombre}]`
+                        : "";
+                      return (
+                        <option key={m.idMovimiento} value={m.idMovimiento}>
+                          [{m.codigo}] {m.tipoMovimiento} - {m.motivoMovimiento} ({m.fechaMovimiento})
+                          {etiquetaAutor}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
@@ -2257,16 +2265,19 @@ export const ModuloOperativoPage: React.FC = () => {
                   <th className="py-3 px-4">Tipo</th>
                   <th className="py-3 px-4">Motivo</th>
                   <th className="py-3 px-4">Fecha</th>
+                  <th className="py-3 px-4">Registrado por</th>
                   <th className="py-3 px-4">Detalle Ítems</th>
                   <th className="py-3 px-4 text-right">Acción</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
-                {movimientos.map((m) => (
+                {movimientos.map((m) => {
+                  const esPropio = Number(m.usuarioRegistro) === Number(currentUserId);
+                  return (
                   <tr key={m.idMovimiento} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-4 font-bold text-sky-600">
                       <span>{m.codigo}</span>
-                      {Number(m.usuarioRegistro) === Number(currentUserId) && (
+                      {esPropio && (
                         <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-sky-100 text-sky-700">
                           Propio
                         </span>
@@ -2279,6 +2290,16 @@ export const ModuloOperativoPage: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">{m.motivoMovimiento}</td>
                     <td className="py-3 px-4 text-slate-500">{m.fechaMovimiento}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-slate-800">
+                          {m.usuarioNombre || (esPropio ? `${usuario?.nombres || "Usuario"} ${usuario?.apellidoPaterno || ""}`.trim() : "Personal de Almacén")}
+                        </span>
+                        {esPropio && (
+                          <span className="text-[10px] text-sky-600 font-bold">(Tú)</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-3 px-4 text-slate-600">
                       {m.detalles && m.detalles.length > 0 ? (
                         <span>{m.detalles.map((d: any) => `${d.productoNombre} (${d.cantidad} ${d.unidad})`).join(", ")}</span>
@@ -2316,7 +2337,8 @@ export const ModuloOperativoPage: React.FC = () => {
                       })()}
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>
