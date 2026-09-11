@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LogOut, Home, Menu, Settings, Wrench, Shield, Users, ChevronDown, CheckCircle2 } from "lucide-react";
+import { LogOut, Menu, Wrench, Shield, Users, ChevronDown, CheckCircle2 } from "lucide-react";
 
 export const Topbar: React.FC = () => {
-  const { usuario, perfilActivo, panelActivo, logout, toggleSidebar, seleccionarPanel } = useAuth();
+  const { usuario, perfilActivo, panelActivo, logout, toggleSidebar } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -23,12 +23,6 @@ export const Topbar: React.FC = () => {
   const handleLogout = () => {
     logout();
     navigate("/login");
-  };
-
-  const handleVolverInicio = async () => {
-    await seleccionarPanel(null);
-    setDropdownOpen(false);
-    navigate("/home");
   };
 
   const getRoleBadge = () => {
@@ -124,32 +118,8 @@ export const Topbar: React.FC = () => {
               </div>
             </div>
 
-            {/* Acciones */}
-            <div className="py-2 space-y-1">
-              {panelActivo && (
-                <button
-                  onClick={handleVolverInicio}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#063D2A] hover:bg-[#F3F1EA] rounded-xl transition-colors cursor-pointer"
-                >
-                  <Home className="w-4 h-4 text-[#063D2A]" />
-                  <span>Volver a Inicio / Paneles</span>
-                </button>
-              )}
-
-              <button
-                onClick={() => {
-                  setDropdownOpen(false);
-                  navigate("/home/opciones-menu");
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#063D2A] hover:bg-[#F3F1EA] rounded-xl transition-colors cursor-pointer"
-              >
-                <Settings className="w-4 h-4 text-slate-500" />
-                <span>Configuración de Menú</span>
-              </button>
-            </div>
-
-            {/* Salida */}
-            <div className="pt-2 border-t border-slate-100">
+            {/* Salida: Solo Cerrar Sesión */}
+            <div className="pt-2">
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"

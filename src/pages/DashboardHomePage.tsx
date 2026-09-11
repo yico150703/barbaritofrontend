@@ -13,7 +13,6 @@ import {
   TrendingUp,
   Layers,
   Sparkles,
-  Info,
 } from "lucide-react";
 
 export const DashboardHomePage: React.FC = () => {
@@ -82,21 +81,13 @@ export const DashboardHomePage: React.FC = () => {
         <div className="absolute -right-10 -bottom-10 w-80 h-80 rounded-full bg-[#28D978]/15 blur-3xl pointer-events-none" />
       </div>
 
-      {/* Nota informativa de regla de negocio */}
-      <div className="p-4 rounded-2xl bg-white border border-[#063D2A]/15 text-[#063D2A] text-xs sm:text-sm flex items-start gap-3 shadow-xs">
-        <Info className="w-5 h-5 text-[#063D2A] shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          <strong>Regla de Navegación:</strong> Actualmente te encuentras en el <strong>Dashboard Inicial</strong>, por lo que el menú lateral izquierdo solo muestra la opción <em>"Inicio"</em>. Al hacer clic en un panel, serás redirigido a su dashboard y el menú lateral cargará automáticamente todos los submenús correspondientes. Puedes volver aquí en cualquier momento haciendo clic en <em>"Inicio"</em>.
-        </p>
-      </div>
-
       {/* ===================================================================== */}
       {/* TARJETAS DE PANELES DE ACCESO */}
       {/* ===================================================================== */}
       <div>
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-indigo-600" />
+            <Layers className="w-5 h-5 text-[#063D2A]" />
             <span>{esTecnico ? "Paneles Disponibles en el Sistema" : "Tu Panel de Control"}</span>
           </h2>
           <span className="text-xs text-slate-500 font-medium hidden sm:inline">
