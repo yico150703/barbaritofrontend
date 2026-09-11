@@ -31,7 +31,7 @@ export const LoginPage: React.FC = () => {
       setLoading(true);
       setError(null);
       setInitSuccess(null);
-      await login(correo, clave);
+      await login(correo.trim(), clave.trim());
       navigate("/home");
     } catch (err: any) {
       const msg =
