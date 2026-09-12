@@ -1,337 +1,297 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { TipoPanel } from "../types";
+import { api } from "../services/api";
 import {
-  Wrench,
-  Warehouse,
-  Boxes,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
+  Shield,
+  Users,
   ListTree,
-  TrendingUp,
-  Layers,
+  ArrowRight,
   Sparkles,
+  CheckCircle2,
+  Database,
+  Layers,
 } from "lucide-react";
 
 export const DashboardHomePage: React.FC = () => {
-  const { usuario, perfilActivo, perfiles, seleccionarPanel } = useAuth();
+  const { usuario, perfilActivo } = useAuth();
   const navigate = useNavigate();
 
-  // Asegurar que al estar en el Dashboard Inicial, el menú lateral contenga ÚNICAMENTE "Inicio"
+  const [stats, setStats] = useState({
+    totalPerfiles: 0,
+    totalUsuarios: 0,
+    totalOpciones: 0,
+    loading: true,
+  });
+
   useEffect(() => {
-    seleccionarPanel(null);
+    const cargarEstadisticas = async () => {
+      try {
+        const [resPerfiles, resUsuarios, resOpciones] = await Promise.all([
+          api.get("/perfiles", { params: { limit: 1 } }),
+          api.get("/usuarios", { params: { limit: 1 } }),
+          api.get("/opciones-menu", { params: { limit: 1 } }),
+        ]);
+
+        setStats({
+          totalPerfiles: resPerfiles.data?.total || 0,
+          totalUsuarios: resUsuarios.data?.total || 0,
+          totalOpciones: resOpciones.data?.total || 0,
+          loading: false,
+        });
+      } catch (err) {
+        console.error("Error al cargar estadísticas:", err);
+        setStats((prev) => ({ ...prev, loading: false }));
+      }
+    };
+
+    cargarEstadisticas();
   }, []);
-
-  // Comprobar si el usuario tiene rol Técnico
-  const esTecnico =
-    perfilActivo?.idPerfil === 1 ||
-    perfiles.some((p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("técnico") || p.nombre.toLowerCase().includes("tecnico"));
-
-  // Comprobar si es Gerente / Administrador
-  const esGerente =
-    perfilActivo?.idPerfil === 2 ||
-    perfiles.some((p) => p.idPerfil === 2 || p.nombre.toLowerCase().includes("gerente") || p.nombre.toLowerCase().includes("admin"));
-
-  // Comprobar si es Miembro de equipo
-  const esMiembro =
-    perfilActivo?.idPerfil === 3 ||
-    perfiles.some((p) => p.idPerfil === 3 || p.nombre.toLowerCase().includes("miembro"));
-
-  const handleEntrarPanel = async (panel: TipoPanel, ruta: string) => {
-    await seleccionarPanel(panel);
-    navigate(ruta);
-  };
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
-      {/* Banner Principal de Bienvenida Barbarian */}
+      {/* Banner Principal Barbarian - Seguridad y Control de Acceso RBAC */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0B0E0C] via-[#022A1E] to-[#063D2A] text-white p-6 sm:p-9 shadow-2xl border border-[#28D978]/30">
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#28D978]/20 border border-[#28D978]/40 text-[#28D978] text-xs font-bold mb-4 shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-[#28D978]" />
-            <span>Dashboard Inicial &bull; Sesión: {perfilActivo?.nombre || "Usuario"}</span>
+            <span>Sistema RBAC &bull; Sesión: {perfilActivo?.nombre || "Administrador"}</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
             Bienvenido, {usuario?.nombres} {usuario?.apellidoPaterno}
           </h1>
           <p className="text-slate-200 text-sm sm:text-base mt-3 leading-relaxed">
-            {esTecnico ? (
-              <>
-                Como <strong className="text-white">Técnico</strong> cuentas con{" "}
-                <span className="text-[#28D978] font-bold">acceso general a todos los módulos del sistema</span>.
-                Selecciona a continuación el panel al que deseas ingresar para desplegar sus menús y submódulos autorizados.
-              </>
-            ) : esGerente ? (
-              <>
-                Has ingresado con el rol de <strong className="text-white">Administrador / Gerente</strong>.
-                Haz clic en tu panel de control para desplegar los 10 módulos y submenús autorizados de supervisión.
-              </>
-            ) : (
-              <>
-                Has ingresado con el rol de <strong className="text-white">Miembro de Equipo</strong>.
-                Haz clic en tu panel operativo para desplegar tus 5 submódulos autorizados de almacén e inventario.
-              </>
-            )}
+            Plataforma configurada exclusivamente para la administración y mantenimiento de los{" "}
+            <strong className="text-[#28D978]">3 Requerimientos Principales</strong> según el modelo de datos:{" "}
+            <strong>Perfiles</strong>, <strong>Usuarios con asignación de Roles</strong> y{" "}
+            <strong>Opciones de Menú jerárquico</strong>.
           </p>
         </div>
 
-        {/* Círculo de luz decorativo en verde brillante */}
+        {/* Resumen numérico rápido en la esquina derecha del banner */}
+        <div className="hidden lg:grid grid-cols-3 gap-3 absolute right-8 top-1/2 -translate-y-1/2 z-10">
+          <div className="bg-black/30 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center min-w-[100px]">
+            <span className="text-2xl font-black text-[#28D978]">
+              {stats.loading ? "..." : stats.totalPerfiles}
+            </span>
+            <p className="text-[11px] text-slate-300 uppercase font-semibold mt-0.5">Perfiles</p>
+          </div>
+          <div className="bg-black/30 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center min-w-[100px]">
+            <span className="text-2xl font-black text-sky-400">
+              {stats.loading ? "..." : stats.totalUsuarios}
+            </span>
+            <p className="text-[11px] text-slate-300 uppercase font-semibold mt-0.5">Usuarios</p>
+          </div>
+          <div className="bg-black/30 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center min-w-[100px]">
+            <span className="text-2xl font-black text-indigo-400">
+              {stats.loading ? "..." : stats.totalOpciones}
+            </span>
+            <p className="text-[11px] text-slate-300 uppercase font-semibold mt-0.5">Opciones</p>
+          </div>
+        </div>
+
+        {/* Halo de luz decorativo */}
         <div className="absolute -right-10 -bottom-10 w-80 h-80 rounded-full bg-[#28D978]/15 blur-3xl pointer-events-none" />
       </div>
 
       {/* ===================================================================== */}
-      {/* TARJETAS DE PANELES DE ACCESO */}
+      {/* SECCIÓN DE LOS 3 REQUERIMIENTOS DEL DIAGRAMA ENTIDAD-RELACIÓN */}
       {/* ===================================================================== */}
       <div>
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
             <Layers className="w-5 h-5 text-[#063D2A]" />
-            <span>{esTecnico ? "Paneles Disponibles en el Sistema" : "Tu Panel de Control"}</span>
+            <span>Módulos y Formularios Disponibles</span>
           </h2>
-          <span className="text-xs text-slate-500 font-medium hidden sm:inline">
-            {esTecnico ? "3 paneles con acceso irrestricto" : "Acceso configurado según perfil"}
+          <span className="text-xs text-slate-500 font-semibold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200">
+            Fase de Evaluación: 3 Requerimientos
           </span>
         </div>
 
-        {/* 1. VISTA PARA TÉCNICO: MUESTRA LOS 3 PANELES */}
-        {esTecnico && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Tarjeta 1: Panel Técnico */}
-            <div className="rounded-3xl p-6 sm:p-7 bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-14 h-14 rounded-2xl bg-sky-500 text-white flex items-center justify-center shadow-lg shadow-sky-500/30">
-                    <Wrench className="w-7 h-7" />
-                  </div>
-                  <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
-                    Panel #1 &bull; Técnico
-                  </span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* ============================================================== */}
+          {/* 1. MANTENIMIENTO DE LA TABLA PERFIL */}
+          {/* ============================================================== */}
+          <div className="rounded-3xl p-6 sm:p-7 bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between group">
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-14 h-14 rounded-2xl bg-sky-500 text-white flex items-center justify-center shadow-lg shadow-sky-500/30">
+                  <Shield className="w-7 h-7" />
                 </div>
-
-                <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">
-                  Panel Técnico
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                  Mantenimiento de seguridad del sistema, administración de perfiles de usuario, árbol jerárquico de menús y asignación de permisos.
-                </p>
-
-                <div className="space-y-2 mb-6 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
-                    <span>Mantenimiento de Perfiles (Roles)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
-                    <span>Mantenimiento de Opciones de Menú</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
-                    <span>Gestión y Auditoría de Usuarios</span>
-                  </div>
-                </div>
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+                  Requerimiento #1
+                </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => handleEntrarPanel("tecnico", "/home/panel-tecnico")}
-                className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
-              >
-                <span>Ingresar al Panel Técnico</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">
+                Mantenimiento de Perfiles
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
+                Gestión completa de los roles del sistema (Tabla <code className="text-sky-700 font-semibold">Perfiles</code>) para el control de acceso y seguridad RBAC.
+              </p>
 
-            {/* Tarjeta 2: Panel Administrador / Gerencial */}
-            <div className="rounded-3xl p-6 sm:p-7 bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
-                    <Warehouse className="w-7 h-7" />
-                  </div>
-                  <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
-                    Panel #2 &bull; Administrador
-                  </span>
+              <div className="space-y-2.5 mb-6 text-xs text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                  <span>Formulario de alta y edición con campos: Nombre y Descripción</span>
                 </div>
-
-                <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors">
-                  Panel Administrador
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                  Supervisión gerencial de inventario: existencias, entradas y salidas, catálogo de ítems, solicitudes, miembros de equipo y reportes.
-                </p>
-
-                <div className="space-y-2 mb-6 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span>10 Módulos de Supervisión General</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span>Control de Stock, Ítems y Kardex</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span>Compras, Solicitudes y Reportes</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                  <span>Desactivación / Borrado lógico (EstadoRegistro = 0)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                  <span>Búsqueda en tiempo real y paginación</span>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() => handleEntrarPanel("gerencial", "/home/panel-gerencial")}
-                className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
-              >
-                <span>Ingresar al Panel Administrador</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
             </div>
 
-            {/* Tarjeta 3: Panel Miembro de Equipo */}
-            <div className="rounded-3xl p-6 sm:p-7 bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between group">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                    <Boxes className="w-7 h-7" />
-                  </div>
-                  <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Panel #3 &bull; Miembro de Equipo
-                  </span>
-                </div>
-
-                <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors">
-                  Panel Miembro de Equipo
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                  Módulos operativos directos de almacén: consulta de existencias, recepción y despacho de productos, solicitudes e inventario físico.
-                </p>
-
-                <div className="space-y-2 mb-6 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Consulta de Stock en Almacén</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Registro de Entradas y Salidas</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Conteo Físico por Fecha e Inventario</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => handleEntrarPanel("miembro-equipo", "/home/panel-miembro-equipo")}
-                className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
-              >
-                <span>Ingresar al Panel Miembro de Equipo</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/home/perfiles")}
+              className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
+            >
+              <span>Abrir Mantenimiento de Perfiles</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
-        )}
 
-        {/* 2. VISTA PARA ADMINISTRADOR / GERENTE */}
-        {!esTecnico && esGerente && (
-          <div className="max-w-xl mx-auto">
-            <div className="rounded-3xl p-6 sm:p-8 bg-white border border-amber-200/90 shadow-xl flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-16 h-16 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30">
-                    <Warehouse className="w-8 h-8" />
-                  </div>
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
-                    Panel Asignado &bull; Administrador
-                  </span>
+          {/* ============================================================== */}
+          {/* 2. MANTENIMIENTO DE LA TABLA USUARIO (RELACIONADO CON PERFIL) */}
+          {/* ============================================================== */}
+          <div className="rounded-3xl p-6 sm:p-7 bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between group">
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30">
+                  <Users className="w-7 h-7" />
                 </div>
-
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                  Panel de Administración y Gerencia
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                  Accede a todos los módulos de supervisión autorizados para tu cuenta: Gestión de Usuarios, Stock, Catálogo de Ítems, Movimientos, Solicitudes, Miembros y Reportes.
-                </p>
-
-                <div className="space-y-2 mb-6 text-xs text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>10 Módulos de Supervisión con sus Submenús Acordeón</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>Control de Kardex, Existencias y Ajustes Físicos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>Auditoría de Movimientos y Emisión de Compras</span>
-                  </div>
-                </div>
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Requerimiento #2
+                </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => handleEntrarPanel("gerencial", "/home/panel-gerencial")}
-                className="w-full py-3.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold transition-all shadow-md shadow-amber-600/30 flex items-center justify-center gap-2"
-              >
-                <span>Ingresar a mi Panel de Administrador</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                Mantenimiento de Usuarios y Perfil
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
+                Directorio y formularios de usuarios (Tabla <code className="text-emerald-700 font-semibold">Usuario</code>) vinculados a sus perfiles (Tabla <code className="text-emerald-700 font-semibold">Usuario_Perfiles</code>).
+              </p>
 
-        {/* 3. VISTA PARA MIEMBRO DE EQUIPO */}
-        {!esTecnico && !esGerente && esMiembro && (
-          <div className="max-w-xl mx-auto">
-            <div className="rounded-3xl p-6 sm:p-8 bg-white border border-emerald-200/90 shadow-xl flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                    <Boxes className="w-8 h-8" />
-                  </div>
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Panel Asignado &bull; Operativo
-                  </span>
+              <div className="space-y-2.5 mb-6 text-xs text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Formulario con DNI, Nombres, Apellidos, Celular y Correo</span>
                 </div>
-
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                  Panel de Operaciones de Almacén
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                  Accede a tus módulos operativos asignados: Consulta de Stock, Registro de Movimientos de Entrada y Salida, Monitoreo de Solicitudes y Toma Física de Inventario.
-                </p>
-
-                <div className="space-y-2 mb-6 text-xs text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Consulta de Stock y Existencias Actuales</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Registro de Entradas y Salidas de Almacén</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Formulario de Conteo Físico e Inventario</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Selector multi-perfil para asignar/desasignar roles</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Gestión segura de contraseñas hasheadas y auditoría</span>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() => handleEntrarPanel("miembro-equipo", "/home/panel-miembro-equipo")}
-                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2"
-              >
-                <span>Ingresar a mi Panel Operativo</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => navigate("/home/usuarios")}
+              className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
+            >
+              <span>Abrir Mantenimiento de Usuarios</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
-        )}
+
+          {/* ============================================================== */}
+          {/* 3. MANTENIMIENTO DE LA TABLA OPCIONESMENU */}
+          {/* ============================================================== */}
+          <div className="rounded-3xl p-6 sm:p-7 bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between group">
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/30">
+                  <ListTree className="w-7 h-7" />
+                </div>
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                  Requerimiento #3
+                </span>
+              </div>
+
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                Mantenimiento de Opciones de Menú
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
+                Estructura del árbol jerárquico de menús (Tabla <code className="text-indigo-700 font-semibold">OpcionesMenu</code>) y vinculación a perfiles autorizados (Tabla <code className="text-indigo-700 font-semibold">OpcionesMenu_Perfiles</code>).
+              </p>
+
+              <div className="space-y-2.5 mb-6 text-xs text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span>Formulario de Nombre, Ruta/URL, Padre (IdPadre) y Descripción</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span>Configuración de relaciones padre-hijo (árbol de navegación)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span>Desactivación en cascada de submenús</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate("/home/opciones-menu")}
+              className="w-full py-3 px-4 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group-hover:shadow-[#063D2A]/30 cursor-pointer"
+            >
+              <span>Abrir Mantenimiento de Menús</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ===================================================================== */}
+      {/* RESUMEN DEL MODELO ENTIDAD-RELACIÓN IMPLEMENTADO */}
+      {/* ===================================================================== */}
+      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 rounded-xl bg-[#28D978]/10 text-[#063D2A]">
+            <Database className="w-5 h-5 text-[#28D978]" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              Estructura de Base de Datos Vinculada (Diagrama ER Oficial)
+            </h3>
+            <p className="text-xs text-slate-500">
+              Mapeo relacional de las 5 tablas activas en el esquema PostgreSQL / MySQL.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 pt-2">
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+            <span className="font-bold text-sky-700 block mb-1">1. Perfiles</span>
+            <p className="text-[11px] text-slate-500">IdPerfil, Nombre, Descripcion, EstadoRegistro.</p>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+            <span className="font-bold text-emerald-700 block mb-1">2. Usuario</span>
+            <p className="text-[11px] text-slate-500">IdUsuario, DNI, Nombres, Apellidos, Celular, Correo, Clave, Auditoría.</p>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+            <span className="font-bold text-teal-700 block mb-1">3. Usuario_Perfiles</span>
+            <p className="text-[11px] text-slate-500">IdUsuario, IdPerfil, EstadoRegistro, UsuarioAsignacion, Fechas.</p>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+            <span className="font-bold text-indigo-700 block mb-1">4. OpcionesMenu</span>
+            <p className="text-[11px] text-slate-500">IdOpcionMenu, Nombre, UrlMenu, Descripcion, IdPadre, EstadoRegistro.</p>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+            <span className="font-bold text-purple-700 block mb-1">5. OpcionesMenu_Perfiles</span>
+            <p className="text-[11px] text-slate-500">IdOpcionMenu, IdPerfil, Orden, EstadoRegistro.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

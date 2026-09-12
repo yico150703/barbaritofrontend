@@ -33,14 +33,17 @@ export default function App() {
               <Route path="panel-gerencial" element={<PanelDashboardPage panelTipo="gerencial" />} />
               <Route path="panel-miembro-equipo" element={<PanelDashboardPage panelTipo="miembro-equipo" />} />
 
-              {/* Módulos y CRUDs del sistema */}
+              {/* Módulos y CRUDs del sistema (3 Requerimientos Principales) */}
+              <Route path="perfiles" element={<PerfilesPage />} />
               <Route path="usuarios" element={<UsuariosPage />} />
               <Route path="usuarios/*" element={<UsuariosPage />} />
-              <Route path="perfiles" element={<PerfilesPage />} />
+              <Route path="opciones-menu" element={<OpcionesMenuPage />} />
+              <Route path="opciones-menu/*" element={<OpcionesMenuPage />} />
+
               {/* Redirección de URL errónea inventario/realizar hacia la URL correcta inventario-realizar */}
-              <Route path="inventario/realizar" element={<Navigate to="/home/inventario-realizar" replace />} />
-              <Route path="inventario" element={<Navigate to="/home/inventario-realizar" replace />} />
-              <Route path="*" element={<ModuloOperativoPage />} />
+              <Route path="inventario/realizar" element={<Navigate to="/home" replace />} />
+              <Route path="inventario" element={<Navigate to="/home" replace />} />
+              <Route path="*" element={<Navigate to="/home" replace />} />
             </Route>
 
             {/* Alias /dashboard para compatibilidad con las URLs de la BD */}

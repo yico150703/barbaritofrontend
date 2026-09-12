@@ -223,18 +223,33 @@ export const OpcionesMenuPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div>
-        <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
-          <ListTree className="w-4 h-4" />
-          <span>Configuración de Navegación</span>
+      {/* Encabezado Principal */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
+            <ListTree className="w-4 h-4" />
+            <span>Módulo de Navegación &bull; Requerimiento 3</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
+              Formularios Activos
+            </span>
+          </div>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
+            Mantenimiento de Opciones de Menú
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Estructuración jerárquica de menús (Tabla <code>OpcionesMenu</code>) y accesibilidad por rol (Tabla <code>OpcionesMenu_Perfiles</code>).
+          </p>
         </div>
-        <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Mantenimiento de Opciones de Menú
-        </h2>
-        <p className="text-sm text-slate-500">
-          Define la estructura jerárquica de menús y submenús que se dibujarán dinámicamente en el sidebar.
-        </p>
+
+        <div>
+          <button
+            onClick={handleOpenNuevo}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold rounded-xl shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
+          >
+            <ListTree className="w-4 h-4 text-[#28D978]" />
+            <span>Nueva Opción</span>
+          </button>
+        </div>
       </div>
 
       {/* Tabla */}
