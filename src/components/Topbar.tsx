@@ -25,21 +25,27 @@ export const Topbar: React.FC = () => {
     navigate("/login");
   };
 
-  const getRoleBadge = () => {
+  const getPanelBadge = () => {
     if (panelActivo === "tecnico") {
-      return { label: "Técnico (Super)", icon: Wrench, color: "text-[#063D2A] bg-[#28D978]/20 border-[#28D978]/40" };
+      return { label: "Panel Técnico", icon: Wrench, color: "text-[#063D2A] bg-[#28D978]/20 border-[#28D978]/40" };
     }
     if (panelActivo === "gerencial") {
-      return { label: "Administrador / Supervisor", icon: Shield, color: "text-[#063D2A] bg-amber-100 border-amber-300" };
+      return { label: "Panel Administrador", icon: Shield, color: "text-[#063D2A] bg-amber-100 border-amber-300" };
     }
     if (panelActivo === "miembro-equipo") {
-      return { label: "Miembro de Equipo", icon: Users, color: "text-[#063D2A] bg-emerald-100 border-emerald-300" };
+      return { label: "Panel Miembro de Equipo", icon: Users, color: "text-[#063D2A] bg-emerald-100 border-emerald-300" };
     }
-    return { label: perfilActivo?.nombre || "Usuario", icon: CheckCircle2, color: "text-[#063D2A] bg-[#28D978]/15 border-[#28D978]/30" };
+    return { label: "Panel Principal", icon: CheckCircle2, color: "text-[#063D2A] bg-[#28D978]/15 border-[#28D978]/30" };
   };
 
-  const roleInfo = getRoleBadge();
-  const RoleIcon = roleInfo.icon;
+  const panelInfo = getPanelBadge();
+  const PanelIcon = panelInfo.icon;
+
+  // Rol REAL del usuario asignado en la BD (se mantiene intacto sin importar qué panel se visite)
+  const rolRealUsuario =
+    usuario?.perfiles?.[0]?.nombre ||
+    perfilActivo?.nombre ||
+    "Técnico";
 
   const iniciales = usuario
     ? `${usuario.nombres?.[0] || ""}${usuario.apellidoPaterno?.[0] || ""}`.toUpperCase()
@@ -47,7 +53,7 @@ export const Topbar: React.FC = () => {
 
   const nombreCompleto = usuario
     ? `${usuario.nombres} ${usuario.apellidoPaterno}`
-    : "Roberto Díaz";
+    : "Carlos Rodríguez";
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/90 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs select-none">
@@ -66,15 +72,15 @@ export const Topbar: React.FC = () => {
             Sistema de gestión e inventario
           </h1>
           {panelActivo && (
-            <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${roleInfo.color}`}>
-              <RoleIcon className="w-3 h-3" />
-              <span>{roleInfo.label}</span>
+            <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${panelInfo.color}`}>
+              <PanelIcon className="w-3 h-3" />
+              <span>{panelInfo.label}</span>
             </span>
           )}
         </div>
       </div>
 
-      {/* Lado derecho: Cápsula de Usuario interactiva */}
+      {/* Lado derecho: Cápsula de Usuario interactiva (Siempre muestra el rol real del usuario) */}
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -85,7 +91,7 @@ export const Topbar: React.FC = () => {
               {nombreCompleto}
             </p>
             <p className="text-[11px] text-slate-500 font-medium">
-              {perfilActivo?.nombre || (panelActivo ? roleInfo.label : "Supervisor")}
+              {rolRealUsuario}
             </p>
           </div>
 
@@ -110,10 +116,10 @@ export const Topbar: React.FC = () => {
                   {nombreCompleto}
                 </p>
                 <p className="text-[11px] text-slate-500 truncate">
-                  {usuario?.correoElectronico || "rdiaz@gmail.com"}
+                  {usuario?.correoElectronico || "crodriguez@gmail.com"}
                 </p>
                 <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#28D978]/20 text-[#063D2A]">
-                  {perfilActivo?.nombre || "Usuario Activo"}
+                  Rol: {rolRealUsuario}
                 </span>
               </div>
             </div>

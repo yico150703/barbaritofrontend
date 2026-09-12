@@ -178,33 +178,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           panelDetectado = guardado || null;
         }
 
+        // Mantener siempre el perfil REAL del usuario (de su cuenta en la BD)
+        if (perfiles && perfiles.length > 0) {
+          const perfilReal = perfiles[0];
+          setPerfilActivo(perfilReal);
+          localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfilReal));
+          localStorage.setItem("almacen_active_profile_id", String(perfilReal.idPerfil));
+        }
+
         setPanelActivo(panelDetectado);
         if (panelDetectado) {
           localStorage.setItem("almacen_active_panel", panelDetectado);
-          const idPerfilTarget = getProfileIdForPanel(panelDetectado);
-          const nombrePerfilTarget =
-            panelDetectado === "miembro-equipo"
-              ? "Miembro de equipo"
-              : panelDetectado === "gerencial"
-              ? "Administrador"
-              : "Técnico";
-          const perfilCorrespondiente: Perfil =
-            perfiles.find((p) => p.idPerfil === idPerfilTarget) || {
-              idPerfil: idPerfilTarget,
-              nombre: nombrePerfilTarget,
-              estadoRegistro: 1,
-            };
-          setPerfilActivo(perfilCorrespondiente);
-          localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfilCorrespondiente));
-          localStorage.setItem("almacen_active_profile_id", String(idPerfilTarget));
           await cargarMenuPorPanel(panelDetectado, usuario.idUsuario);
         } else {
           localStorage.removeItem("almacen_active_panel");
-          if (perfiles && perfiles.length > 0) {
-            setPerfilActivo(perfiles[0]);
-            localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfiles[0]));
-            localStorage.setItem("almacen_active_profile_id", String(perfiles[0].idPerfil));
-          }
           setMenuTree([OPCION_INICIO]);
         }
       }
@@ -264,38 +251,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPanelActivo(panel);
     if (!panel) {
       localStorage.removeItem("almacen_active_panel");
-      if (perfiles && perfiles.length > 0) {
-        const principal = perfiles[0];
-        setPerfilActivo(principal);
-        localStorage.setItem("almacen_perfil_activo", JSON.stringify(principal));
-        localStorage.setItem("almacen_active_profile_id", String(principal.idPerfil));
-      }
       setMenuTree([OPCION_INICIO]);
       return;
     }
 
     localStorage.setItem("almacen_active_panel", panel);
 
-    // Sincronizar perfilActivo y almacen_active_profile_id con el panel seleccionado
-    const idPerfilTarget = getProfileIdForPanel(panel);
-    const nombrePerfilTarget =
-      panel === "miembro-equipo"
-        ? "Miembro de equipo"
-        : panel === "gerencial"
-        ? "Administrador"
-        : "Técnico";
-
-    const perfilCorrespondiente: Perfil =
-      perfiles.find((p) => p.idPerfil === idPerfilTarget) || {
-        idPerfil: idPerfilTarget,
-        nombre: nombrePerfilTarget,
-        estadoRegistro: 1,
-      };
-
-    setPerfilActivo(perfilCorrespondiente);
-    localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfilCorrespondiente));
-    localStorage.setItem("almacen_active_profile_id", String(idPerfilTarget));
-
+    // El rol real del usuario en la BD (perfilActivo) se mantiene intacto para evitar confusiones de rol.
+    // Solo se cargan los menús autorizados correspondientes a dicho panel.
     if (usuario) {
       await cargarMenuPorPanel(panel, usuario.idUsuario);
     }
