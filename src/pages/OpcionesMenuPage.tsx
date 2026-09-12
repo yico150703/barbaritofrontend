@@ -35,22 +35,70 @@ export const OpcionesMenuPage: React.FC = () => {
   const [deletingOpcion, setDeletingOpcion] = useState<OpcionMenu | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+const OPCIONES_MENU_FALLBACK: OpcionMenu[] = [
+  { idOpcionMenu: 1, nombre: "Inicio", urlMenu: "/home", descripcion: "Página principal del sistema", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 2, nombre: "Panel técnico", urlMenu: "/home/panel-tecnico", descripcion: "Panel principal del perfil técnico", idPadre: 1, estadoRegistro: 1, padreNombre: "Inicio" },
+  { idOpcionMenu: 3, nombre: "Panel gerencial", urlMenu: "/home/panel-gerencial", descripcion: "Panel principal del perfil gerente", idPadre: 1, estadoRegistro: 1, padreNombre: "Inicio" },
+  { idOpcionMenu: 4, nombre: "Panel de miembro de equipo", urlMenu: "/home/panel-miembro-equipo", descripcion: "Panel principal del perfil miembro de equipo", idPadre: 1, estadoRegistro: 1, padreNombre: "Inicio" },
+  { idOpcionMenu: 5, nombre: "Mantenimiento de perfiles", urlMenu: "/home/perfiles", descripcion: "Permite consultar de roles y privilegios de acceso al sistema (Tabla Perfiles).", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 6, nombre: "Editar Perfiles", urlMenu: "/home/perfiles/editar", descripcion: "Permite la actualización de nombres de perfiles, descripciones y control de estado de registro.", idPadre: 5, estadoRegistro: 1, padreNombre: "Mantenimiento de perfiles" },
+  { idOpcionMenu: 7, nombre: "Mantenimiento de Opciones de Menú", urlMenu: "/home/opciones-menu", descripcion: "Permite visualizar la estructuración jerárquica de menús (Tabla OpcionesMenu) y accesibilidad por rol.", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 8, nombre: "Editar Opciones de Menú", urlMenu: "/home/opciones-menu/editar", descripcion: "Permite la actualización de títulos de menú, rutas de navegación, orden y estructura jerárquica.", idPadre: 7, estadoRegistro: 1, padreNombre: "Mantenimiento de Opciones de Menú" },
+  { idOpcionMenu: 9, nombre: "Gestión de usuarios", urlMenu: "/home/usuarios", descripcion: "Permite consultar y administrar los usuarios", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 10, nombre: "Editar usuario", urlMenu: "/home/usuarios/editar", descripcion: "Permite modificar la información y el perfil de un usuario", idPadre: 9, estadoRegistro: 1, padreNombre: "Gestión de usuarios" },
+  { idOpcionMenu: 11, nombre: "Seguimiento de actividades", urlMenu: "/home/actividades", descripcion: "Permite consultar las actividades propias y las realizadas por el equipo", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 12, nombre: "Gestión de stock", urlMenu: "/home/stock", descripcion: "Permite consultar las existencias actuales de los items", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 13, nombre: "Editar stock", urlMenu: "/home/stock/editar", descripcion: "Permite corregir el stock cuando se detecte un error", idPadre: 12, estadoRegistro: 1, padreNombre: "Gestión de stock" },
+  { idOpcionMenu: 14, nombre: "Gestión de ítems", urlMenu: "/home/items", descripcion: "Permite consultar y administrar los items del inventario", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 15, nombre: "Agregar item", urlMenu: "/home/items/agregar", descripcion: "Permite registrar un nuevo item", idPadre: 14, estadoRegistro: 1, padreNombre: "Gestión de ítems" },
+  { idOpcionMenu: 16, nombre: "Editar item", urlMenu: "/home/items/editar", descripcion: "Permite modificar la información de un item", idPadre: 14, estadoRegistro: 1, padreNombre: "Gestión de ítems" },
+  { idOpcionMenu: 17, nombre: "Reportes de inventario", urlMenu: "/home/reportes", descripcion: "Permite generar reportes por rango de fechas", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 18, nombre: "Entradas y salidas", urlMenu: "/home/movimientos", descripcion: "Permite consultar los movimientos del inventario", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 19, nombre: "Registrar movimiento", urlMenu: "/home/movimientos/registrar", descripcion: "Permite registrar entradas, salidas, préstamos, devoluciones o desechos", idPadre: 18, estadoRegistro: 1, padreNombre: "Entradas y salidas" },
+  { idOpcionMenu: 20, nombre: "Editar movimiento", urlMenu: "/home/movimientos/editar", descripcion: "Permite corregir la información de un movimiento", idPadre: 18, estadoRegistro: 1, padreNombre: "Entradas y salidas" },
+  { idOpcionMenu: 21, nombre: "Gestión de miembros de equipo", urlMenu: "/home/miembros-equipo", descripcion: "Permite consultar y administrar los miembros del equipo", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 22, nombre: "Agregar miembro de equipo", urlMenu: "/home/miembros-equipo/agregar", descripcion: "Permite registrar un nuevo miembro de equipo", idPadre: 21, estadoRegistro: 1, padreNombre: "Gestión de miembros de equipo" },
+  { idOpcionMenu: 23, nombre: "Editar miembro de equipo", urlMenu: "/home/miembros-equipo/editar", descripcion: "Permite modificar o desactivar un miembro de equipo", idPadre: 21, estadoRegistro: 1, padreNombre: "Gestión de miembros de equipo" },
+  { idOpcionMenu: 24, nombre: "Solicitudes de compra", urlMenu: "/home/solicitudes", descripcion: "Permite consultar el estado de las solicitudes", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 25, nombre: "Registrar solicitud", urlMenu: "/home/solicitudes/registrar", descripcion: "Permite generar una nueva solicitud de compra", idPadre: 24, estadoRegistro: 1, padreNombre: "Solicitudes de compra" },
+  { idOpcionMenu: 26, nombre: "Detalle de solicitud", urlMenu: "/home/solicitudes/detalle", descripcion: "Permite consultar los productos, cantidades y estado de una solicitud", idPadre: 24, estadoRegistro: 1, padreNombre: "Solicitudes de compra" },
+  { idOpcionMenu: 27, nombre: "Editar solicitud", urlMenu: "/home/solicitudes/editar", descripcion: "Permite modificar una solicitud pendiente", idPadre: 24, estadoRegistro: 1, padreNombre: "Solicitudes de compra" },
+  { idOpcionMenu: 28, nombre: "Realizar inventario", urlMenu: "/home/inventario-realizar", descripcion: "Permite efectuar el conteo y registrar el inventario por fecha", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 29, nombre: "Órdenes de compra", urlMenu: "/home/ordenes-compra", descripcion: "Permite consultar y administrar las órdenes de compra", idPadre: null, estadoRegistro: 1 },
+  { idOpcionMenu: 30, nombre: "Detalle de orden de compra", urlMenu: "/home/ordenes-compra/detalle", descripcion: "Permite consultar los productos y cantidades de una orden de compra", idPadre: 29, estadoRegistro: 1, padreNombre: "Órdenes de compra" },
+];
+
   const cargarOpciones = async (p = page, q = search) => {
     try {
       setLoading(true);
       const res = await api.get("/opciones-menu", {
         params: { page: p, limit: 50, q, incluir_inactivos: true },
       });
-      if (res.data.success) {
-        setOpciones(res.data.opciones || []);
+      if (res.data && res.data.success && res.data.opciones && res.data.opciones.length > 0) {
+        setOpciones(res.data.opciones);
         setTotalPages(res.data.total_paginas || 1);
-        setTotalRecords(res.data.total || 0);
+        setTotalRecords(res.data.total || res.data.opciones.length);
+        return;
       }
     } catch (err) {
       console.error("Error al cargar opciones:", err);
     } finally {
       setLoading(false);
     }
+
+    // Fallback asegurado con las 30 entidades oficiales de la tabla OpcionesMenu
+    const filtradas = OPCIONES_MENU_FALLBACK.filter((op) => {
+      if (!q) return true;
+      const term = q.toLowerCase();
+      return (
+        op.nombre.toLowerCase().includes(term) ||
+        op.urlMenu.toLowerCase().includes(term) ||
+        (op.descripcion && op.descripcion.toLowerCase().includes(term))
+      );
+    });
+    setOpciones(filtradas);
+    setTotalPages(1);
+    setTotalRecords(filtradas.length);
   };
 
   const cargarPadres = async () => {
@@ -58,12 +106,14 @@ export const OpcionesMenuPage: React.FC = () => {
       const res = await api.get("/opciones-menu", {
         params: { solo_padres: true, incluir_inactivos: true },
       });
-      if (res.data.success) {
-        setOpcionesPadre(res.data.opciones || []);
+      if (res.data && res.data.success && res.data.opciones && res.data.opciones.length > 0) {
+        setOpcionesPadre(res.data.opciones);
+        return;
       }
     } catch (err) {
       console.error("Error al cargar opciones padre:", err);
     }
+    setOpcionesPadre(OPCIONES_MENU_FALLBACK.filter((op) => op.idPadre === null));
   };
 
   useEffect(() => {

@@ -12,59 +12,197 @@ export const OPCION_INICIO: OpcionMenu = {
   hijos: [],
 };
 
+export const MENU_GERENCIAL_ITEMS: OpcionMenu[] = [
+  {
+    idOpcionMenu: 9,
+    nombre: "Gestión de usuarios",
+    urlMenu: "/home/usuarios",
+    idPadre: 3,
+    orden: 2,
+    hijos: [
+      { idOpcionMenu: 10, nombre: "Editar usuario", urlMenu: "/home/usuarios/editar", idPadre: 9, orden: 1 },
+    ],
+  },
+  {
+    idOpcionMenu: 11,
+    nombre: "Seguimiento de actividades",
+    urlMenu: "/home/actividades",
+    idPadre: 3,
+    orden: 3,
+  },
+  {
+    idOpcionMenu: 12,
+    nombre: "Gestión de stock",
+    urlMenu: "/home/stock",
+    idPadre: 3,
+    orden: 4,
+    hijos: [
+      { idOpcionMenu: 13, nombre: "Editar stock", urlMenu: "/home/stock/editar", idPadre: 12, orden: 1 },
+    ],
+  },
+  {
+    idOpcionMenu: 14,
+    nombre: "Gestión de ítems",
+    urlMenu: "/home/items",
+    idPadre: 3,
+    orden: 5,
+    hijos: [
+      { idOpcionMenu: 15, nombre: "Agregar item", urlMenu: "/home/items/agregar", idPadre: 14, orden: 1 },
+      { idOpcionMenu: 16, nombre: "Editar item", urlMenu: "/home/items/editar", idPadre: 14, orden: 2 },
+    ],
+  },
+  {
+    idOpcionMenu: 17,
+    nombre: "Reportes de inventario",
+    urlMenu: "/home/reportes",
+    idPadre: 3,
+    orden: 6,
+  },
+  {
+    idOpcionMenu: 18,
+    nombre: "Entradas y salidas",
+    urlMenu: "/home/movimientos",
+    idPadre: 3,
+    orden: 7,
+    hijos: [
+      { idOpcionMenu: 19, nombre: "Registrar movimiento", urlMenu: "/home/movimientos/registrar", idPadre: 18, orden: 1 },
+      { idOpcionMenu: 20, nombre: "Editar movimiento", urlMenu: "/home/movimientos/editar", idPadre: 18, orden: 2 },
+    ],
+  },
+  {
+    idOpcionMenu: 21,
+    nombre: "Gestión de miembros de equipo",
+    urlMenu: "/home/miembros-equipo",
+    idPadre: 3,
+    orden: 8,
+    hijos: [
+      { idOpcionMenu: 22, nombre: "Agregar miembro de equipo", urlMenu: "/home/miembros-equipo/agregar", idPadre: 21, orden: 1 },
+      { idOpcionMenu: 23, nombre: "Editar miembro de equipo", urlMenu: "/home/miembros-equipo/editar", idPadre: 21, orden: 2 },
+    ],
+  },
+  {
+    idOpcionMenu: 24,
+    nombre: "Solicitudes de compra",
+    urlMenu: "/home/solicitudes",
+    idPadre: 3,
+    orden: 9,
+    hijos: [
+      { idOpcionMenu: 25, nombre: "Registrar solicitud", urlMenu: "/home/solicitudes/registrar", idPadre: 24, orden: 1 },
+      { idOpcionMenu: 26, nombre: "Detalle de solicitud", urlMenu: "/home/solicitudes/detalle", idPadre: 24, orden: 2 },
+      { idOpcionMenu: 27, nombre: "Editar solicitud", urlMenu: "/home/solicitudes/editar", idPadre: 24, orden: 3 },
+    ],
+  },
+  {
+    idOpcionMenu: 28,
+    nombre: "Realizar inventario",
+    urlMenu: "/home/inventario-realizar",
+    idPadre: 3,
+    orden: 10,
+  },
+  {
+    idOpcionMenu: 29,
+    nombre: "Órdenes de compra",
+    urlMenu: "/home/ordenes-compra",
+    idPadre: 3,
+    orden: 11,
+    hijos: [
+      { idOpcionMenu: 30, nombre: "Detalle de orden de compra", urlMenu: "/home/ordenes-compra/detalle", idPadre: 29, orden: 1 },
+    ],
+  },
+];
+
+export const MENU_MIEMBRO_ITEMS: OpcionMenu[] = [
+  {
+    idOpcionMenu: 12,
+    nombre: "Gestión de stock",
+    urlMenu: "/home/stock",
+    idPadre: 4,
+    orden: 1,
+  },
+  {
+    idOpcionMenu: 18,
+    nombre: "Entradas y salidas",
+    urlMenu: "/home/movimientos",
+    idPadre: 4,
+    orden: 2,
+    hijos: [
+      { idOpcionMenu: 19, nombre: "Registrar movimiento", urlMenu: "/home/movimientos/registrar", idPadre: 18, orden: 1 },
+      { idOpcionMenu: 20, nombre: "Editar movimiento", urlMenu: "/home/movimientos/editar", idPadre: 18, orden: 2 },
+    ],
+  },
+  {
+    idOpcionMenu: 24,
+    nombre: "Solicitudes de compra",
+    urlMenu: "/home/solicitudes",
+    idPadre: 4,
+    orden: 3,
+    hijos: [
+      { idOpcionMenu: 25, nombre: "Registrar solicitud", urlMenu: "/home/solicitudes/registrar", idPadre: 24, orden: 1 },
+      { idOpcionMenu: 26, nombre: "Detalle de solicitud", urlMenu: "/home/solicitudes/detalle", idPadre: 24, orden: 2 },
+    ],
+  },
+  {
+    idOpcionMenu: 28,
+    nombre: "Realizar inventario",
+    urlMenu: "/home/inventario-realizar",
+    idPadre: 4,
+    orden: 4,
+  },
+];
+
 export const MENU_TECNICO_TREE: OpcionMenu[] = [
   OPCION_INICIO,
   {
-    idOpcionMenu: 10,
+    idOpcionMenu: 2,
     nombre: "Panel Técnico",
     urlMenu: "/home/panel-tecnico",
-    idPadre: null,
+    idPadre: 1,
     orden: 2,
     hijos: [
       {
-        idOpcionMenu: 11,
+        idOpcionMenu: 5,
         nombre: "Mantenimiento de Perfiles",
         urlMenu: "/home/perfiles",
-        idPadre: 10,
+        idPadre: 2,
         orden: 1,
         hijos: [
           {
-            idOpcionMenu: 111,
+            idOpcionMenu: 6,
             nombre: "Editar Perfiles",
             urlMenu: "/home/perfiles/editar",
-            idPadre: 11,
+            idPadre: 5,
             orden: 1,
           },
         ],
       },
       {
-        idOpcionMenu: 12,
+        idOpcionMenu: 7,
         nombre: "Mantenimiento de Opciones de Menú",
         urlMenu: "/home/opciones-menu",
-        idPadre: 10,
+        idPadre: 2,
         orden: 2,
         hijos: [
           {
-            idOpcionMenu: 121,
+            idOpcionMenu: 8,
             nombre: "Editar Opciones de Menú",
             urlMenu: "/home/opciones-menu/editar",
-            idPadre: 12,
+            idPadre: 7,
             orden: 1,
           },
         ],
       },
       {
-        idOpcionMenu: 13,
+        idOpcionMenu: 9,
         nombre: "Gestión de Usuarios",
         urlMenu: "/home/usuarios",
-        idPadre: 10,
+        idPadre: 2,
         orden: 3,
         hijos: [
           {
-            idOpcionMenu: 14,
+            idOpcionMenu: 10,
             nombre: "Editar Usuario",
             urlMenu: "/home/usuarios/editar",
-            idPadre: 13,
+            idPadre: 9,
             orden: 1,
           },
         ],
@@ -72,18 +210,20 @@ export const MENU_TECNICO_TREE: OpcionMenu[] = [
     ],
   },
   {
-    idOpcionMenu: 20,
+    idOpcionMenu: 3,
     nombre: "Panel Gerencial",
     urlMenu: "/home/panel-gerencial",
-    idPadre: null,
+    idPadre: 1,
     orden: 3,
+    hijos: MENU_GERENCIAL_ITEMS,
   },
   {
-    idOpcionMenu: 30,
+    idOpcionMenu: 4,
     nombre: "Panel Miembro de Equipo",
     urlMenu: "/home/panel-miembro-equipo",
-    idPadre: null,
+    idPadre: 1,
     orden: 4,
+    hijos: MENU_MIEMBRO_ITEMS,
   },
 ];
 
@@ -159,55 +299,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    const fallbackItems = panel === "gerencial" ? MENU_GERENCIAL_ITEMS : MENU_MIEMBRO_ITEMS;
+
     try {
       const idPerfilTarget = getProfileIdForPanel(panel);
       const resp = await api.get(`/menu/${idUsuario}/${idPerfilTarget}`);
 
-      if (resp.data && resp.data.success) {
+      if (resp.data && resp.data.success && resp.data.menu && resp.data.menu.length > 0) {
         const rawMenu: OpcionMenu[] = resp.data.menu || [];
 
-        // Para Gerencial y Miembro de Equipo: excluimos el nodo de Inicio que viene de la BD
+        // Excluimos el nodo de Inicio que viene de la BD para colocarlo en primer lugar
         const modulosPanel: OpcionMenu[] = rawMenu.filter(
           (m) => m.idOpcionMenu !== 1 && m.urlMenu !== "/home" && m.urlMenu !== "/dashboard"
         );
 
-        // Asegurar que para miembro de equipo "Entradas y salidas" contenga tanto Registrar como Editar movimiento
-        if (panel === "miembro-equipo") {
-          const itemMov = modulosPanel.find(
-            (m) => m.urlMenu === "/home/movimientos" || m.nombre.toLowerCase().includes("entradas")
-          );
-          if (itemMov) {
-            if (!itemMov.hijos) itemMov.hijos = [];
-            const tieneRegistrar = itemMov.hijos.some((h) => h.urlMenu === "/home/movimientos/registrar");
-            const tieneEditar = itemMov.hijos.some((h) => h.urlMenu === "/home/movimientos/editar");
-            if (!tieneRegistrar) {
-              itemMov.hijos.push({
-                idOpcionMenu: 15,
-                nombre: "Registrar movimiento",
-                urlMenu: "/home/movimientos/registrar",
-                idPadre: itemMov.idOpcionMenu,
-              });
-            }
-            if (!tieneEditar) {
-              itemMov.hijos.push({
-                idOpcionMenu: 16,
-                nombre: "Editar movimiento",
-                urlMenu: "/home/movimientos/editar",
-                idPadre: itemMov.idOpcionMenu,
-              });
-            }
-          }
+        if (modulosPanel.length > 0) {
+          setMenuTree([OPCION_INICIO, ...modulosPanel]);
+          return;
         }
-
-        // El menú final del panel siempre tiene 'Inicio' al principio + todos los módulos de ese rol
-        setMenuTree([OPCION_INICIO, ...modulosPanel]);
-      } else {
-        setMenuTree([OPCION_INICIO]);
       }
     } catch (error) {
       console.error("Error al obtener árbol de menú para panel:", panel, error);
-      setMenuTree([OPCION_INICIO]);
     }
+
+    // Fallback asegurado usando la tabla oficial para que NUNCA quede vacío
+    setMenuTree([OPCION_INICIO, ...fallbackItems]);
   };
 
   // Inicializar menú según ruta o estado guardado al arrancar
