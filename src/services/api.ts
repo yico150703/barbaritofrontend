@@ -1,6 +1,32 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const getBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== "" && !envUrl.includes("tu-backend")) {
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol === "https:" &&
+      envUrl.includes("http://localhost")
+    ) {
+      return "https://barbaritosql.onrender.com/api";
+    }
+    return envUrl;
+  }
+
+  // Si estamos en el navegador en Vercel o cualquier dominio remoto HTTPS
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    return "https://barbaritosql.onrender.com/api";
+  }
+
+  // Desarrollo local en localhost
+  return "http://localhost:5000/api";
+};
+
+export const API_BASE_URL = getBaseUrl();
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
