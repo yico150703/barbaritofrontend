@@ -96,6 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [panelActivo, setPanelActivo] = useState<TipoPanel>(() => {
+    if (MODO_TRES_REQUERIMIENTOS) {
+      return null;
+    }
     const raw = localStorage.getItem("almacen_active_panel");
     if (raw === "tecnico" || raw === "gerencial" || raw === "miembro-equipo") {
       return raw as TipoPanel;
@@ -204,6 +207,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const inicializar = async () => {
       if (usuario && token) {
+        if (MODO_TRES_REQUERIMIENTOS) {
+          setPanelActivo(null);
+          localStorage.removeItem("almacen_active_panel");
+          setMenuTree(OPCIONES_TRES_REQUERIMIENTOS);
+          setLoading(false);
+          return;
+        }
+
         const path = window.location.pathname.toLowerCase();
 
         let panelDetectado: TipoPanel = null;
