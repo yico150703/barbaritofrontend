@@ -2,116 +2,39 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
 import {
-  Boxes,
   Package,
+  Boxes,
   ArrowLeftRight,
   FileText,
   ClipboardCheck,
+  FileBarChart,
   Activity,
-  Plus,
+  Users,
+  UserPlus,
+  Edit3,
+  ShoppingCart,
   CheckCircle2,
   AlertCircle,
   Save,
-  RefreshCw,
-  Search,
-  UserPlus,
-  Shield,
-  Clock,
-  ArrowRight,
-  Calendar,
-  Layers,
-  FileBarChart,
-  Check,
-  Sliders,
-  Edit3,
-  Download,
-  FileSpreadsheet,
-  FileDown,
-  Eye,
-  ShoppingCart,
-  Printer,
-  ChevronRight,
+  ArrowLeft,
   UserCheck,
-  Truck,
 } from "lucide-react";
 
 export const ModuloOperativoPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { usuario, perfilActivo, panelActivo } = useAuth();
+  const { usuario, perfilActivo } = useAuth();
   const path = location.pathname.toLowerCase();
-  const currentUserId = usuario?.idUsuario ?? (usuario as any)?.id_usuario;
-  const esMiembroEquipo = perfilActivo?.idPerfil === 3 || panelActivo === "miembro-equipo";
 
-  // Estados de datos
-  const [items, setItems] = useState<any[]>([]);
-  const [stockList, setStockList] = useState<any[]>([]);
-  const [movimientos, setMovimientos] = useState<any[]>([]);
-  const [solicitudes, setSolicitudes] = useState<any[]>([]);
+  // Estados exclusivos para Gestión de Miembros de Equipo
   const [miembros, setMiembros] = useState<any[]>([]);
-  const [actividades, setActividades] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // Estados de filtros para catálogo maestro estilo Barbarian
-  const [filtroBusqueda, setFiltroBusqueda] = useState("");
-  const [filtroCategoria, setFiltroCategoria] = useState("TODAS");
-  const [filtroProveedor, setFiltroProveedor] = useState("TODOS");
+  const [loadingMiembros, setLoadingMiembros] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [mensajeError, setMensajeError] = useState<string | null>(null);
-  const [guardando, setGuardando] = useState(false);
 
-  // Formulario 1: Agregar Ítem (/home/items/agregar)
-  const [formItem, setFormItem] = useState({
-    codigo: "",
-    nombre: "",
-    unidad: "Kg",
-    stockMinimo: 10,
-    presentacion: 1,
-    idCategoria: 1,
-  });
-
-  // Formulario 1.1: Editar Ítem (/home/items/editar)
-  const [selectedItemId, setSelectedItemId] = useState<string>("");
-  const [formEditItem, setFormEditItem] = useState({
-    nombre: "",
-    unidad: "Kg",
-    stockMinimo: 10,
-    presentacion: 1,
-    idCategoria: 1,
-  });
-
-  // Formulario 2: Editar Stock / Ajuste (/home/stock/editar)
-  const [formStock, setFormStock] = useState({
-    idProducto: "",
-    nuevoStock: "",
-    motivo: "Corrección por inventario físico",
-    observacion: "",
-  });
-
-  // Formulario 3: Registrar Movimiento (/home/movimientos/registrar)
-  const [formMov, setFormMov] = useState({
-    tipoMovimiento: "ENTRADA",
-    motivoMovimiento: "Recepción de compra",
-    idProducto: "",
-    cantidad: "",
-    localRelacionado: "Almacén Principal",
-    observacion: "",
-  });
-
-  // Formulario 3.1: Editar Movimiento (/home/movimientos/editar)
-  const [selectedMovId, setSelectedMovId] = useState<string>("");
-  const [formEditMov, setFormEditMov] = useState({
-    motivoMovimiento: "",
-    localRelacionado: "",
-    fechaMovimiento: "",
-    observacion: "",
-  });
-
-  // Formulario 4: Agregar Miembro de Equipo (/home/miembros-equipo/agregar)
+  // Formulario: Agregar Miembro de Equipo (/home/miembros-equipo/agregar)
   const [formMiembro, setFormMiembro] = useState({
     dni: "",
     nombres: "",
@@ -122,7 +45,7 @@ export const ModuloOperativoPage: React.FC = () => {
     clave: "password123",
   });
 
-  // Formulario 4.1: Editar Miembro de Equipo (/home/miembros-equipo/editar)
+  // Formulario: Editar Miembro de Equipo (/home/miembros-equipo/editar)
   const [selectedMiembroId, setSelectedMiembroId] = useState<string>("");
   const [formEditMiembro, setFormEditMiembro] = useState({
     dni: "",
@@ -134,251 +57,72 @@ export const ModuloOperativoPage: React.FC = () => {
     estadoRegistro: 1,
   });
 
-  // Formulario 5: Registrar Solicitud de Compra (/home/solicitudes/registrar)
-  const [formSolicitud, setFormSolicitud] = useState({
-    idProducto: "",
-    cantidad: "",
-    motivo: "Reabastecimiento regular",
-    observacion: "",
-  });
-
-  // Formulario 5.1: Editar Solicitud (/home/solicitudes/editar)
-  const [selectedSolicitudId, setSelectedSolicitudId] = useState<string>("");
-  const [formEditSolicitud, setFormEditSolicitud] = useState({
-    estadoOrdenCompra: "PENDIENTE",
-    cantidad: "",
-    observacion: "",
-  });
-
-  // Detalle de Solicitud seleccionada (/home/solicitudes/detalle)
-  const [detalleSolicitudId, setDetalleSolicitudId] = useState<string>("");
-
-  // Detalle de Orden de Compra seleccionada (/home/ordenes-compra/detalle)
-  const [detalleOrdenId, setDetalleOrdenId] = useState<string>("");
-
-  // Formulario 6: Realizar Inventario (/home/inventario-realizar)
-  const [formInventario, setFormInventario] = useState({
-    fechaInventario: new Date().toISOString().split("T")[0],
-    idProducto: "",
-    stockContado: "",
-    observacion: "Conteo físico rutinario verificado",
-  });
-  const [ultimoInventarioPDF, setUltimoInventarioPDF] = useState<any | null>(null);
-
-  // Cargar datos según la sección (Módulos de almacén se mantienen vacíos para cumplir únicamente los 3 requerimientos del ER)
-  const cargarDatos = async () => {
+  // Cargar miembros de equipo desde la base de datos
+  const cargarMiembros = async () => {
     try {
-      setLoading(true);
-      setItems([]);
-      setStockList([]);
-      setMovimientos([]);
-      setSolicitudes([]);
-      setMiembros([]);
-      setActividades([]);
+      setLoadingMiembros(true);
+      const res = await api.get("/miembros-equipo");
+      if (res.data.success) {
+        const lista = res.data.miembros || [];
+        setMiembros(lista);
+        if (lista.length > 0 && !selectedMiembroId) {
+          handleSelectEditMiembro(String(lista[0].idUsuario), lista);
+        }
+      }
     } catch (err) {
-      console.error("Error al cargar datos:", err);
+      console.error("Error al cargar miembros de equipo:", err);
     } finally {
-      setLoading(false);
+      setLoadingMiembros(false);
     }
   };
 
   useEffect(() => {
-    setMensajeExito(null);
-    setMensajeError(null);
-    cargarDatos();
+    if (path.includes("miembros-equipo")) {
+      cargarMiembros();
+    }
   }, [path]);
 
-  // Si se selecciona un ítem para editar, rellenar su formulario
-  const handleSelectEditItem = (id: string) => {
-    setSelectedItemId(id);
-    const it = items.find((p) => String(p.idProducto) === id);
-    if (it) {
-      setFormEditItem({
-        nombre: it.nombre || "",
-        unidad: it.unidad || "Kg",
-        stockMinimo: it.stockMinimo || 10,
-        presentacion: it.presentacion || 1,
-        idCategoria: it.idCategoria || 1,
-      });
-    }
-  };
-
-  // Si se selecciona un movimiento para editar, rellenar su formulario
-  const handleSelectEditMov = (id: string) => {
-    setSelectedMovId(id);
-    const m = movimientos.find((x) => String(x.idMovimiento) === id);
-    if (m) {
-      setFormEditMov({
-        motivoMovimiento: m.motivoMovimiento || "",
-        localRelacionado: m.localRelacionado || "",
-        fechaMovimiento: m.fechaMovimiento || "",
-        observacion: m.observacion || "",
-      });
-    }
-  };
-
-  // Si se selecciona un miembro para editar, rellenar su formulario
-  const handleSelectEditMiembro = (id: string) => {
-    setSelectedMiembroId(id);
-    const m = miembros.find((x) => String(x.idUsuario) === id);
-    if (m) {
+  const handleSelectEditMiembro = (idStr: string, lista = miembros) => {
+    setSelectedMiembroId(idStr);
+    const mb = lista.find((m) => String(m.idUsuario) === idStr);
+    if (mb) {
       setFormEditMiembro({
-        dni: m.dni || "",
-        nombres: m.nombres || "",
-        apellidoPaterno: m.apellidoPaterno || "",
-        apellidoMaterno: m.apellidoMaterno || "",
-        celular: m.celular || "",
-        correoElectronico: m.correoElectronico || "",
-        estadoRegistro: m.estadoRegistro ?? 1,
+        dni: mb.dni || "",
+        nombres: mb.nombres || "",
+        apellidoPaterno: mb.apellidoPaterno || "",
+        apellidoMaterno: mb.apellidoMaterno || "",
+        celular: mb.celular ? String(mb.celular) : "",
+        correoElectronico: mb.correoElectronico || "",
+        estadoRegistro: mb.estadoRegistro ?? 1,
       });
     }
   };
 
-  // Si se selecciona una solicitud para editar
-  const handleSelectEditSolicitud = (id: string) => {
-    setSelectedSolicitudId(id);
-    const s = solicitudes.find((x) => String(x.idOrdenCompra) === id);
-    if (s) {
-      setFormEditSolicitud({
-        estadoOrdenCompra: s.estadoOrdenCompra || "PENDIENTE",
-        cantidad: s.detalles?.[0]?.cantidadSolicitada || "10",
-        observacion: "",
-      });
-    }
-  };
-
-  // 1. Guardar nuevo ítem
-  const handleGuardarItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.post("/items", formItem);
-      setMensajeExito(res.data.mensaje || "Ítem guardado con éxito en la base de datos.");
-      setFormItem({ codigo: "", nombre: "", unidad: "Kg", stockMinimo: 10, presentacion: 1, idCategoria: 1 });
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al registrar el ítem.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // 1.1 Guardar edición de ítem
-  const handleActualizarItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedItemId) {
-      setMensajeError("Debe seleccionar un producto para editar.");
-      return;
-    }
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.put(`/items/${selectedItemId}`, formEditItem);
-      setMensajeExito(res.data.mensaje || "Ítem actualizado correctamente en la base de datos.");
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al actualizar el ítem.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // 2. Guardar Ajuste de Stock
-  const handleGuardarAjusteStock = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (esMiembroEquipo) {
-      setMensajeError("Acceso no habilitado: El ajuste de stock no está permitido para Miembros de equipo.");
-      return;
-    }
-    if (!formStock.idProducto || !formStock.nuevoStock) {
-      setMensajeError("Por favor seleccione un producto e ingrese el nuevo stock.");
-      return;
-    }
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.post("/stock/ajustar", formStock);
-      setMensajeExito(res.data.mensaje || "Stock ajustado y guardado correctamente en la base de datos.");
-      setFormStock({ idProducto: "", nuevoStock: "", motivo: "Corrección por inventario físico", observacion: "" });
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al ajustar el stock.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // 3. Registrar Movimiento
-  const handleGuardarMovimiento = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formMov.idProducto || !formMov.cantidad) {
-      setMensajeError("Debe seleccionar un producto e ingresar la cantidad.");
-      return;
-    }
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.post("/movimientos", formMov);
-      setMensajeExito(res.data.mensaje || "Movimiento registrado con éxito.");
-      setFormMov({
-        tipoMovimiento: "ENTRADA",
-        motivoMovimiento: "Recepción de compra",
-        idProducto: "",
-        cantidad: "",
-        localRelacionado: "Almacén Principal",
-        observacion: "",
-      });
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al registrar movimiento.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // 3.1 Actualizar Movimiento
-  const handleActualizarMovimiento = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedMovId) {
-      setMensajeError("Debe seleccionar un movimiento a editar.");
-      return;
-    }
-    const movAEditar = movimientos.find((x) => String(x.idMovimiento) === String(selectedMovId));
-    if (esMiembroEquipo && movAEditar && Number(movAEditar.usuarioRegistro) !== Number(currentUserId)) {
-      setMensajeError("Acceso denegado: Solo puedes editar movimientos que tú mismo hayas registrado.");
-      return;
-    }
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.put(`/movimientos/${selectedMovId}`, formEditMov);
-      setMensajeExito(res.data.mensaje || "Movimiento actualizado con éxito en la base de datos.");
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al actualizar el movimiento.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // 4. Agregar Miembro de Equipo
   const handleGuardarMiembro = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formMiembro.dni || !formMiembro.nombres || !formMiembro.apellidoPaterno || !formMiembro.correoElectronico) {
-      setMensajeError("DNI, Nombres, Apellido Paterno y Correo son obligatorios.");
+      setMensajeError("Por favor completa los campos obligatorios.");
       return;
     }
+
     try {
       setGuardando(true);
       setMensajeError(null);
       const res = await api.post("/miembros-equipo", formMiembro);
       setMensajeExito(res.data.mensaje || "Miembro de equipo registrado con éxito en la base de datos.");
-      setFormMiembro({ dni: "", nombres: "", apellidoPaterno: "", apellidoMaterno: "", celular: "", correoElectronico: "", clave: "password123" });
-      cargarDatos();
+      setFormMiembro({
+        dni: "",
+        nombres: "",
+        apellidoPaterno: "",
+        apellidoMaterno: "",
+        celular: "",
+        correoElectronico: "",
+        clave: "password123",
+      });
+      cargarMiembros();
     } catch (err: any) {
       if (err.response?.status === 409 || err.response?.data?.yaExiste) {
-        setMensajeError(`⚠️ El miembro con DNI '${formMiembro.dni}' o correo ya existe en la base de datos. No se ha duplicado.`);
+        setMensajeError(`⚠️ El miembro con DNI '${formMiembro.dni}' o correo ya existe en la base de datos. No se duplicará.`);
       } else {
         setMensajeError(err.response?.data?.mensaje || "Error al registrar el miembro de equipo.");
       }
@@ -387,7 +131,6 @@ export const ModuloOperativoPage: React.FC = () => {
     }
   };
 
-  // 4.1 Actualizar Miembro de Equipo
   const handleActualizarMiembro = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMiembroId) {
@@ -399,7 +142,7 @@ export const ModuloOperativoPage: React.FC = () => {
       setMensajeError(null);
       const res = await api.put(`/miembros-equipo/${selectedMiembroId}`, formEditMiembro);
       setMensajeExito(res.data.mensaje || "Miembro de equipo actualizado con éxito en la base de datos.");
-      cargarDatos();
+      cargarMiembros();
     } catch (err: any) {
       setMensajeError(err.response?.data?.mensaje || "Error al actualizar miembro.");
     } finally {
@@ -407,846 +150,88 @@ export const ModuloOperativoPage: React.FC = () => {
     }
   };
 
-  // 5. Registrar Solicitud
-  const handleGuardarSolicitud = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (esMiembroEquipo) {
-      setMensajeError("Acceso restringido: Los miembros de equipo no tienen permisos para emitir solicitudes de compra.");
-      return;
+  // Título e información correspondiente a cada ruta (Separación estricta de Solicitudes vs Órdenes de Compra)
+  const getModuloInfo = (currentPath: string) => {
+    const p = currentPath.toLowerCase();
+
+    // 1. Solicitudes de Compra (Separadas de Órdenes de Compra)
+    if (p === "/home/solicitudes/registrar") {
+      return { titulo: "Registrar Solicitud de Compra", descripcion: "Formulario para registro de requerimientos de abastecimiento de insumos.", icono: FileText };
     }
-    if (!formSolicitud.idProducto || !formSolicitud.cantidad) {
-      setMensajeError("Seleccione un producto e ingrese la cantidad a solicitar.");
-      return;
+    if (p === "/home/solicitudes/editar") {
+      return { titulo: "Editar Solicitud de Compra", descripcion: "Modificación de requerimientos y estados de solicitud de insumos.", icono: FileText };
     }
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.post("/solicitudes", formSolicitud);
-      setMensajeExito(res.data.mensaje || "Solicitud de compra emitida correctamente.");
-      setFormSolicitud({ idProducto: "", cantidad: "", motivo: "Reabastecimiento regular", observacion: "" });
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al registrar solicitud.");
-    } finally {
-      setGuardando(false);
+    if (p === "/home/solicitudes/detalle") {
+      return { titulo: "Detalle de Solicitud de Compra", descripcion: "Consulta de información y especificaciones de solicitudes de compra.", icono: FileText };
     }
+    if (p === "/home/solicitudes" || p.startsWith("/home/solicitudes")) {
+      return { titulo: "Solicitudes de Compra", descripcion: "Monitoreo de solicitudes y requerimientos de insumos.", icono: FileText };
+    }
+
+    // 2. Órdenes de Compra (Separadas de Solicitudes)
+    if (p === "/home/ordenes-compra/detalle") {
+      return { titulo: "Detalle de Orden de Compra", descripcion: "Detalle de órdenes de abastecimiento y pedidos a proveedores.", icono: ShoppingCart };
+    }
+    if (p === "/home/ordenes-compra" || p.startsWith("/home/ordenes-compra")) {
+      return { titulo: "Órdenes de Compra", descripcion: "Emisión y control de órdenes de compra del almacén.", icono: ShoppingCart };
+    }
+
+    // 3. Catálogo de Ítems
+    if (p === "/home/items/agregar") {
+      return { titulo: "Agregar Ítem", descripcion: "Registro de nuevos productos en el catálogo de almacén.", icono: Package };
+    }
+    if (p === "/home/items/editar") {
+      return { titulo: "Editar Ítem", descripcion: "Modificación de especificaciones de productos en el catálogo maestro.", icono: Package };
+    }
+    if (p === "/home/items" || p.startsWith("/home/items")) {
+      return { titulo: "Gestión de Ítems", descripcion: "Catálogo maestro de productos, insumos y artículos de almacén.", icono: Package };
+    }
+
+    // 4. Gestión de Stock
+    if (p === "/home/stock/editar") {
+      return { titulo: "Editar Stock", descripcion: "Ajuste y corrección de existencias en almacén.", icono: Boxes };
+    }
+    if (p === "/home/stock" || p.startsWith("/home/stock")) {
+      return { titulo: "Gestión de Stock", descripcion: "Consulta de existencias, niveles mínimos y alertas de reposición.", icono: Boxes };
+    }
+
+    // 5. Entradas y Salidas / Movimientos
+    if (p === "/home/movimientos/registrar") {
+      return { titulo: "Registrar Movimiento", descripcion: "Formulario de registro de movimientos de almacén.", icono: ArrowLeftRight };
+    }
+    if (p === "/home/movimientos/editar") {
+      return { titulo: "Editar Movimiento", descripcion: "Corrección de transacciones registradas en el kardex.", icono: ArrowLeftRight };
+    }
+    if (p === "/home/movimientos" || p.startsWith("/home/movimientos")) {
+      return { titulo: "Entradas y Salidas", descripcion: "Kardex general de movimientos y transacciones de almacén.", icono: ArrowLeftRight };
+    }
+
+    // 6. Inventario
+    if (p.includes("inventario")) {
+      return { titulo: "Realizar Inventario", descripcion: "Toma física de inventario cíclico y auditoría de existencias.", icono: ClipboardCheck };
+    }
+
+    // 7. Reportes
+    if (p.includes("reportes")) {
+      return { titulo: "Reportes de Inventario", descripcion: "Generación de métricas, balances e informes ejecutivos de almacén.", icono: FileBarChart };
+    }
+
+    // 8. Actividades
+    if (p.includes("actividades")) {
+      return { titulo: "Seguimiento de Actividades", descripcion: "Bitácora de auditoría y trazabilidad de operaciones del sistema.", icono: Activity };
+    }
+
+    return { titulo: "Módulo Operativo", descripcion: "Módulo del sistema de almacén.", icono: Package };
   };
 
-  // 5.1 Actualizar Solicitud
-  const handleActualizarSolicitud = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (esMiembroEquipo) {
-      setMensajeError("Acceso restringido: Los miembros de equipo no tienen permisos para modificar solicitudes de compra.");
-      return;
-    }
-    if (!selectedSolicitudId) {
-      setMensajeError("Debe seleccionar una solicitud a modificar.");
-      return;
-    }
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.put(`/solicitudes/${selectedSolicitudId}`, formEditSolicitud);
-      setMensajeExito(res.data.mensaje || "Solicitud actualizada con éxito.");
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al actualizar solicitud.");
-    } finally {
-      setGuardando(false);
-    }
-  };
+  // ===========================================================================
+  // 1. CASO EXCEPCIÓN: GESTIÓN DE MIEMBROS DE EQUIPO (FORMULARIOS ACTIVOS)
+  // ===========================================================================
 
-  // Función para generar y descargar Acta de Conteo de Inventario en PDF
-  const generarPDFInventario = (datosInv: {
-    fecha: string;
-    producto: any;
-    stockContado: string | number;
-    stockAnterior: string | number;
-    observacion: string;
-    auditor: string;
-  }) => {
-    try {
-      const doc = new jsPDF();
-      // Cabecera institucional
-      doc.setFillColor(15, 23, 42); // Slate-900
-      doc.rect(0, 0, 210, 32, "F");
-
-      doc.setFontSize(16);
-      doc.setTextColor(255, 255, 255);
-      doc.text("ACTA DE TOMA DE INVENTARIO FÍSICO", 14, 18);
-
-      doc.setFontSize(9);
-      doc.setTextColor(148, 163, 184);
-      doc.text("Sistema de Gestión de Almacén - Registro Oficial de Existencias", 14, 25);
-
-      doc.setFontSize(10);
-      doc.setTextColor(30, 41, 59);
-      doc.text(`Fecha del Conteo Físico: ${datosInv.fecha}`, 14, 44);
-      doc.text(`Responsable / Auditor: ${datosInv.auditor}`, 14, 51);
-      doc.text(`Estado del Registro: Guardado en Base de Datos PostgreSQL`, 14, 58);
-
-      const tableData = [
-        ["Código de Ítem", datosInv.producto?.codigo || "N/A"],
-        ["Nombre del Ítem", datosInv.producto?.nombre || "N/A"],
-        ["Categoría", datosInv.producto?.categoriaNombre || "General"],
-        ["Unidad de Medida", datosInv.producto?.unidad || "Und"],
-        ["Stock Contado (Físico)", `${datosInv.stockContado} ${datosInv.producto?.unidad || ""}`],
-        ["Stock Previo en Sistema", `${datosInv.stockAnterior} ${datosInv.producto?.unidad || ""}`],
-        ["Observaciones de Toma", datosInv.observacion || "Sin observaciones adicionales"],
-      ];
-
-      autoTable(doc, {
-        startY: 65,
-        head: [["Parámetro de Auditoría", "Valor Registrado"]],
-        body: tableData,
-        theme: "striped",
-        headStyles: { fillColor: [13, 148, 136] }, // Teal-600
-        styles: { fontSize: 9 },
-      });
-
-      const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 35 : 150;
-      doc.setDrawColor(148, 163, 184);
-      doc.line(25, finalY, 85, finalY);
-      doc.line(125, finalY, 185, finalY);
-
-      doc.setFontSize(8);
-      doc.setTextColor(100, 116, 139);
-      doc.text("Firma del Auditor / Operador", 30, finalY + 6);
-      doc.text("Firma de Jefatura de Almacén", 130, finalY + 6);
-
-      const filename = `Acta_Inventario_${datosInv.producto?.codigo || "Auditoria"}_${datosInv.fecha}.pdf`;
-      doc.save(filename);
-      return filename;
-    } catch (err) {
-      console.error("Error al generar PDF:", err);
-      return null;
-    }
-  };
-
-  // 6. Realizar Inventario con descarga automática de PDF
-  const handleGuardarInventario = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formInventario.idProducto || formInventario.stockContado === "") {
-      setMensajeError("Seleccione un producto e ingrese el conteo físico verificado.");
-      return;
-    }
-    const prodSeleccionado = items.find((it) => String(it.idProducto) === String(formInventario.idProducto));
-    const stockActualPrevio = prodSeleccionado?.stockActual ?? prodSeleccionado?.stockMinimo ?? 0;
-
-    try {
-      setGuardando(true);
-      setMensajeError(null);
-      const res = await api.post("/inventarios", formInventario);
-
-      const datosParaPDF = {
-        fecha: formInventario.fechaInventario,
-        producto: prodSeleccionado,
-        stockContado: formInventario.stockContado,
-        stockAnterior: stockActualPrevio,
-        observacion: formInventario.observacion,
-        auditor: usuario?.nombreCompleto || "Personal de Almacén",
-      };
-
-      setUltimoInventarioPDF(datosParaPDF);
-      const archivoGenerado = generarPDFInventario(datosParaPDF);
-
-      setMensajeExito(
-        `${res.data.mensaje || "Conteo físico registrado con éxito en la base de datos."} Se ha descargado automáticamente el reporte PDF '${archivoGenerado}'.`
-      );
-      setFormInventario({
-        fechaInventario: new Date().toISOString().split("T")[0],
-        idProducto: "",
-        stockContado: "",
-        observacion: "Conteo físico rutinario verificado",
-      });
-      cargarDatos();
-    } catch (err: any) {
-      setMensajeError(err.response?.data?.mensaje || "Error al registrar inventario.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  // Exportar Reporte General a PDF
-  const handleDescargarReportePDF = () => {
-    try {
-      const doc = new jsPDF();
-      doc.setFillColor(30, 41, 59);
-      doc.rect(0, 0, 210, 30, "F");
-
-      doc.setFontSize(16);
-      doc.setTextColor(255, 255, 255);
-      doc.text("REPORTE OFICIAL DE INVENTARIO Y STOCK", 14, 18);
-
-      doc.setFontSize(9);
-      doc.setTextColor(203, 213, 225);
-      doc.text(`Generado: ${new Date().toLocaleString()} | Usuario: ${usuario?.nombreCompleto || "Sistema"}`, 14, 25);
-
-      const dataAExportar = stockList.length > 0 ? stockList : items;
-      const tableData = dataAExportar.map((s) => [
-        s.codigo,
-        s.nombre,
-        s.categoriaNombre || "General",
-        s.unidad,
-        String(s.stockMinimo ?? 0),
-        String(s.stockActual ?? 0),
-        s.alertaStock ? "BAJO STOCK" : "NORMAL",
-      ]);
-
-      autoTable(doc, {
-        startY: 38,
-        head: [["Código", "Nombre del Producto", "Categoría", "Unidad", "Stock Mín.", "Stock Actual", "Estado"]],
-        body: tableData,
-        theme: "striped",
-        headStyles: { fillColor: [79, 70, 229] },
-        styles: { fontSize: 8 },
-      });
-
-      doc.save(`Reporte_Inventario_${new Date().toISOString().split("T")[0]}.pdf`);
-      setMensajeExito("Reporte en PDF generado y descargado exitosamente.");
-    } catch (err) {
-      console.error(err);
-      setMensajeError("Error al generar reporte en PDF.");
-    }
-  };
-
-  // Exportar Reporte General a Excel
-  const handleDescargarReporteExcel = () => {
-    try {
-      const dataAExportar = stockList.length > 0 ? stockList : items;
-      const rows = dataAExportar.map((s) => ({
-        "Código": s.codigo,
-        "Producto": s.nombre,
-        "Categoría": s.categoriaNombre || "General",
-        "Proveedor": s.proveedorNombre || "Sin asignar",
-        "Unidad de Medida": s.unidad,
-        "Stock Mínimo": s.stockMinimo ?? 0,
-        "Stock Actual": s.stockActual ?? 0,
-        "Estado": s.alertaStock ? "BAJO STOCK" : "NORMAL",
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario Actual");
-      XLSX.writeFile(workbook, `Reporte_Inventario_${new Date().toISOString().split("T")[0]}.xlsx`);
-      setMensajeExito("Reporte en Excel (.xlsx) generado y descargado exitosamente.");
-    } catch (err) {
-      console.error(err);
-      setMensajeError("Error al generar reporte en Excel.");
-    }
-  };
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Mensajes de Alerta / Éxito */}
-      {mensajeExito && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>{mensajeExito}</span>
-          </div>
-          <button onClick={() => setMensajeExito(null)} className="text-emerald-700 hover:text-emerald-900 text-xs font-bold">
-            Cerrar
-          </button>
-        </div>
-      )}
-
-      {mensajeError && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-            <span>{mensajeError}</span>
-          </div>
-          <button onClick={() => setMensajeError(null)} className="text-rose-700 hover:text-rose-900 text-xs font-bold">
-            Cerrar
-          </button>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 1. AGREGAR ÍTEM (/home/items/agregar) */}
-      {/* ========================================================================= */}
-      {path.includes("items/agregar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-              <Package className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Agregar Nuevo Ítem al Catálogo</h2>
-              <p className="text-xs text-slate-500">Registra un nuevo producto en la base de datos PostgreSQL.</p>
-            </div>
-          </div>
-
-          <form onSubmit={handleGuardarItem} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Código del Ítem *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej. V-020, S-015"
-                  value={formItem.codigo}
-                  onChange={(e) => setFormItem({ ...formItem, codigo: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nombre del Producto *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej. Pimiento Morrón"
-                  value={formItem.nombre}
-                  onChange={(e) => setFormItem({ ...formItem, nombre: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Unidad de Medida *</label>
-                <select
-                  value={formItem.unidad}
-                  onChange={(e) => setFormItem({ ...formItem, unidad: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
-                >
-                  <option value="Kg">Kilogramos (Kg)</option>
-                  <option value="Lt">Litros (Lt)</option>
-                  <option value="Und">Unidades (Und)</option>
-                  <option value="Paquete">Paquete</option>
-                  <option value="Caja">Caja</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Stock Mínimo</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={formItem.stockMinimo}
-                  onChange={(e) => setFormItem({ ...formItem, stockMinimo: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#28D978]/30 focus:border-[#063D2A]"
-                />
-              </div>
-            </div>
-
-            <div className="pt-4 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/home/items")}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-              >
-                Volver al Catálogo
-              </button>
-              <button
-                type="submit"
-                disabled={guardando}
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>{guardando ? "Registrando..." : "Guardar Ítem en Base de Datos"}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 1.1 EDITAR ÍTEM (/home/items/editar) */}
-      {/* ========================================================================= */}
-      {path.includes("items/editar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-              <Edit3 className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Editar Ítem del Catálogo</h2>
-              <p className="text-xs text-slate-500">Selecciona el producto que deseas actualizar y guarda los cambios.</p>
-            </div>
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-              Seleccionar Producto a Modificar *
-            </label>
-            <select
-              value={selectedItemId}
-              onChange={(e) => handleSelectEditItem(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-indigo-50/50 border border-indigo-200 rounded-xl text-sm font-semibold text-slate-800"
-            >
-              <option value="">-- Elige un ítem para editar sus propiedades --</option>
-              {items.map((it) => (
-                <option key={it.idProducto} value={it.idProducto}>
-                  [{it.codigo}] {it.nombre} ({it.unidad}) - Stock actual: {it.stockActual ?? it.stockMinimo}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {selectedItemId ? (
-            <form onSubmit={handleActualizarItem} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nombre del Producto *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formEditItem.nombre}
-                    onChange={(e) => setFormEditItem({ ...formEditItem, nombre: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Unidad de Medida *</label>
-                  <select
-                    value={formEditItem.unidad}
-                    onChange={(e) => setFormEditItem({ ...formEditItem, unidad: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  >
-                    <option value="Kg">Kilogramos (Kg)</option>
-                    <option value="Lt">Litros (Lt)</option>
-                    <option value="Und">Unidades (Und)</option>
-                    <option value="Paquete">Paquete</option>
-                    <option value="Caja">Caja</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Stock Mínimo</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formEditItem.stockMinimo}
-                    onChange={(e) => setFormEditItem({ ...formEditItem, stockMinimo: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Presentación</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formEditItem.presentacion}
-                    onChange={(e) => setFormEditItem({ ...formEditItem, presentacion: parseFloat(e.target.value) || 1 })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate("/home/items")}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                >
-                  Volver al Catálogo
-                </button>
-                <button
-                  type="submit"
-                  disabled={guardando}
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>{guardando ? "Actualizando..." : "Guardar Cambios del Ítem"}</span>
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm">
-              <Package className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-              Por favor selecciona un producto de la lista desplegable superior para cargar sus datos y editarlos.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 2. EDITAR / AJUSTAR STOCK (/home/stock/editar) */}
-      {/* ========================================================================= */}
-      {path.includes("stock/editar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
-              <Boxes className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Corrección y Ajuste de Stock</h2>
-              <p className="text-xs text-slate-500">Permite corregir las existencias físicas. El nuevo valor se guardará permanentemente en la base de datos.</p>
-            </div>
-          </div>
-
-          {esMiembroEquipo && (
-            <div className="p-4 mb-6 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-amber-900 text-xs font-semibold">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-              <div>
-                <p className="font-bold">Acceso No Habilitado para Miembro de Equipo</p>
-                <p className="text-amber-700">El ajuste manual y corrección directa de existencias está deshabilitado para tu perfil. Solo personal técnico o gerencial puede ajustar el stock.</p>
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={handleGuardarAjusteStock} className="space-y-4">
-            <fieldset disabled={esMiembroEquipo} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Seleccionar Producto a Ajustar *</label>
-                <select
-                  required
-                  value={formStock.idProducto}
-                  onChange={(e) => setFormStock({ ...formStock, idProducto: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <option value="">-- Selecciona un producto del almacén --</option>
-                  {items.map((it) => (
-                    <option key={it.idProducto} value={it.idProducto}>
-                      [{it.codigo}] {it.nombre} ({it.unidad}) &mdash; Stock actual: {it.stockActual ?? it.stockMinimo}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nuevo Stock Físico *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    placeholder="Ej. 25.50"
-                    value={formStock.nuevoStock}
-                    onChange={(e) => setFormStock({ ...formStock, nuevoStock: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo del Ajuste *</label>
-                  <select
-                    value={formStock.motivo}
-                    onChange={(e) => setFormStock({ ...formStock, motivo: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <option value="Corrección por inventario físico">Corrección por inventario físico</option>
-                    <option value="Merma detectada en almacén">Merma detectada en almacén</option>
-                    <option value="Devolución de material">Devolución de material</option>
-                    <option value="Ajuste inicial">Ajuste inicial</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Observaciones / Justificación</label>
-                <textarea
-                  rows={2}
-                  placeholder="Explica la causa del ajuste de stock..."
-                  value={formStock.observacion}
-                  onChange={(e) => setFormStock({ ...formStock, observacion: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                />
-              </div>
-            </fieldset>
-
-            <div className="pt-4 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/home/stock")}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-              >
-                Volver a Gestión de Stock
-              </button>
-              <button
-                type="submit"
-                disabled={guardando || esMiembroEquipo}
-                className={`px-6 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center gap-2 ${
-                  esMiembroEquipo
-                    ? "bg-slate-400 cursor-not-allowed opacity-60 shadow-none"
-                    : "bg-amber-600 hover:bg-amber-700 shadow-amber-600/30"
-                }`}
-              >
-                <Save className="w-4 h-4" />
-                <span>
-                  {esMiembroEquipo
-                    ? "Ajuste Deshabilitado"
-                    : guardando
-                    ? "Ajustando..."
-                    : "Guardar Ajuste en Base de Datos"}
-                </span>
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 3. REGISTRAR MOVIMIENTO (/home/movimientos/registrar) */}
-      {/* ========================================================================= */}
-      {path.includes("movimientos/registrar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center text-sky-600">
-              <ArrowLeftRight className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Registrar Entrada / Salida</h2>
-              <p className="text-xs text-slate-500">Registra transacciones de kardex y actualiza automáticamente el stock.</p>
-            </div>
-          </div>
-
-          <form onSubmit={handleGuardarMovimiento} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Tipo de Movimiento *</label>
-                <select
-                  value={formMov.tipoMovimiento}
-                  onChange={(e) => setFormMov({ ...formMov, tipoMovimiento: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold"
-                >
-                  <option value="ENTRADA">🟢 ENTRADA (Aumenta existencias)</option>
-                  <option value="SALIDA">🔴 SALIDA (Despacho / Disminuye existencias)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo del Movimiento *</label>
-                <select
-                  value={formMov.motivoMovimiento}
-                  onChange={(e) => setFormMov({ ...formMov, motivoMovimiento: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                >
-                  <option value="Recepción de compra">Recepción de compra</option>
-                  <option value="Despacho a cocina">Despacho a cocina</option>
-                  <option value="Préstamo a otra sede">Préstamo a otra sede</option>
-                  <option value="Devolución de producto">Devolución de producto</option>
-                  <option value="Desecho por vencimiento">Desecho por vencimiento</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Producto *</label>
-              <select
-                required
-                value={formMov.idProducto}
-                onChange={(e) => setFormMov({ ...formMov, idProducto: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-              >
-                <option value="">-- Selecciona el producto a mover --</option>
-                {items.map((it) => (
-                  <option key={it.idProducto} value={it.idProducto}>
-                    [{it.codigo}] {it.nombre} ({it.unidad}) - Stock actual: {it.stockActual ?? it.stockMinimo}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  placeholder="Ej. 12.00"
-                  value={formMov.cantidad}
-                  onChange={(e) => setFormMov({ ...formMov, cantidad: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Local / Destino</label>
-                <input
-                  type="text"
-                  value={formMov.localRelacionado}
-                  onChange={(e) => setFormMov({ ...formMov, localRelacionado: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Observaciones</label>
-              <input
-                type="text"
-                placeholder="Número de guía, persona receptora o detalle adicional..."
-                value={formMov.observacion}
-                onChange={(e) => setFormMov({ ...formMov, observacion: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-              />
-            </div>
-
-            <div className="pt-4 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/home/movimientos")}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-              >
-                Volver al Kardex
-              </button>
-              <button
-                type="submit"
-                disabled={guardando}
-                className="px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-md shadow-sky-600/30 flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>{guardando ? "Registrando..." : "Guardar Movimiento en Base de Datos"}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 3.1 EDITAR MOVIMIENTO (/home/movimientos/editar) */}
-      {/* ========================================================================= */}
-      {path.includes("movimientos/editar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center text-sky-600">
-              <Edit3 className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Editar Movimiento de Almacén</h2>
-              <p className="text-xs text-slate-500">
-                {esMiembroEquipo
-                  ? "Solo puedes modificar transacciones de kardex registradas por tu propio usuario."
-                  : "Corrige el motivo, fecha u observaciones de una transacción previa."}
-              </p>
-            </div>
-          </div>
-
-          {esMiembroEquipo && (
-            <div className="p-4 mb-5 bg-sky-50/70 border border-sky-200 rounded-2xl flex items-center gap-3 text-sky-900 text-xs font-medium">
-              <Shield className="w-5 h-5 text-sky-600 shrink-0" />
-              <span>Restricción de seguridad activa: Únicamente puedes visualizar y modificar los movimientos registrados por tu usuario.</span>
-            </div>
-          )}
-
-          {(() => {
-            const movimientosDisponibles = esMiembroEquipo
-              ? movimientos.filter((m) => Number(m.usuarioRegistro) === Number(currentUserId))
-              : movimientos;
-
-            if (esMiembroEquipo && movimientosDisponibles.length === 0) {
-              return (
-                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-500 text-sm space-y-3">
-                  <AlertCircle className="w-10 h-10 mx-auto text-amber-500" />
-                  <p className="font-bold text-slate-800">No tienes movimientos propios registrados para editar</p>
-                  <p className="text-xs text-slate-500">
-                    Solo puedes editar transacciones de kardex que tú mismo hayas registrado. No puedes modificar movimientos registrados por otros usuarios.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/home/movimientos")}
-                    className="mt-2 px-5 py-2.5 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-700"
-                  >
-                    Volver a Entradas y Salidas
-                  </button>
-                </div>
-              );
-            }
-
-            return (
-              <>
-                <div className="mb-5">
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                    Seleccionar Movimiento a Editar *
-                  </label>
-                  <select
-                    value={selectedMovId}
-                    onChange={(e) => handleSelectEditMov(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-sky-50/50 border border-sky-200 rounded-xl text-sm font-semibold text-slate-800"
-                  >
-                    <option value="">-- Selecciona una transacción de kardex --</option>
-                    {movimientosDisponibles.map((m) => {
-                      const esPropio = Number(m.usuarioRegistro) === Number(currentUserId);
-                      const etiquetaAutor = esPropio
-                        ? ` (Registrado por ti: ${m.usuarioNombre || usuario?.nombres || "Tú"})`
-                        : m.usuarioNombre
-                        ? ` [Registrado por: ${m.usuarioNombre}]`
-                        : "";
-                      return (
-                        <option key={m.idMovimiento} value={m.idMovimiento}>
-                          [{m.codigo}] {m.tipoMovimiento} - {m.motivoMovimiento} ({m.fechaMovimiento})
-                          {etiquetaAutor}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-
-          {selectedMovId ? (
-            <form onSubmit={handleActualizarMovimiento} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo del Movimiento *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formEditMov.motivoMovimiento}
-                    onChange={(e) => setFormEditMov({ ...formEditMov, motivoMovimiento: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Local / Destino</label>
-                  <input
-                    type="text"
-                    value={formEditMov.localRelacionado}
-                    onChange={(e) => setFormEditMov({ ...formEditMov, localRelacionado: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Observaciones</label>
-                <textarea
-                  rows={2}
-                  value={formEditMov.observacion}
-                  onChange={(e) => setFormEditMov({ ...formEditMov, observacion: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate("/home/movimientos")}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                >
-                  Volver al Kardex
-                </button>
-                <button
-                  type="submit"
-                  disabled={guardando}
-                  className="px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-md shadow-sky-600/30 flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>{guardando ? "Guardando..." : "Actualizar Movimiento"}</span>
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm">
-              <ArrowLeftRight className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-              Selecciona un movimiento del selector superior para cargar y modificar sus datos.
-            </div>
-          )}
-              </>
-            );
-          })()}
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 4. AGREGAR MIEMBRO DE EQUIPO (/home/miembros-equipo/agregar) */}
-      {/* ========================================================================= */}
-      {path.includes("miembros-equipo/agregar") && (
+  // 1.1 Formulario: Agregar Miembro de Equipo
+  if (path.includes("miembros-equipo/agregar")) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-300">
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
@@ -1255,10 +240,24 @@ export const ModuloOperativoPage: React.FC = () => {
             <div>
               <h2 className="text-xl font-bold text-slate-900">Formulario: Dar de Alta Miembro de Equipo</h2>
               <p className="text-xs text-slate-500">
-                Registra un nuevo usuario operativo. Si el DNI o correo ya existen en la base de datos, el sistema no lo duplicará.
+                Registra un nuevo usuario operativo en la base de datos PostgreSQL.
               </p>
             </div>
           </div>
+
+          {mensajeExito && (
+            <div className="mb-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{mensajeExito}</span>
+            </div>
+          )}
+
+          {mensajeError && (
+            <div className="mb-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{mensajeError}</span>
+            </div>
+          )}
 
           <form onSubmit={handleGuardarMiembro} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1339,1049 +338,196 @@ export const ModuloOperativoPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/home/miembros-equipo")}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
               >
                 Volver a la Lista
               </button>
               <button
                 type="submit"
                 disabled={guardando}
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 flex items-center gap-2 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
-                <span>{guardando ? "Verificando..." : "Guardar en Base de Datos"}</span>
+                <span>{guardando ? "Registrando..." : "Dar de Alta Miembro"}</span>
               </button>
             </div>
           </form>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* ========================================================================= */}
-      {/* 4.1 EDITAR MIEMBRO DE EQUIPO (/home/miembros-equipo/editar) */}
-      {/* ========================================================================= */}
-      {path.includes("miembros-equipo/editar") && (
+  // 1.2 Formulario: Editar Miembro de Equipo
+  if (path.includes("miembros-equipo/editar")) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-300">
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <UserCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Editar Miembro de Equipo</h2>
-              <p className="text-xs text-slate-500">Actualiza la ficha del personal operativo del almacén.</p>
-            </div>
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-              Seleccionar Miembro de Equipo a Editar *
-            </label>
-            <select
-              value={selectedMiembroId}
-              onChange={(e) => handleSelectEditMiembro(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-emerald-50/50 border border-emerald-200 rounded-xl text-sm font-semibold text-slate-800"
-            >
-              <option value="">-- Selecciona un miembro de equipo --</option>
-              {miembros.map((mb) => (
-                <option key={mb.idUsuario} value={mb.idUsuario}>
-                  {mb.nombreCompleto} (DNI: {mb.dni}) - {mb.correoElectronico}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {selectedMiembroId ? (
-            <form onSubmit={handleActualizarMiembro} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">DNI *</label>
-                  <input
-                    type="text"
-                    maxLength={8}
-                    required
-                    value={formEditMiembro.dni}
-                    onChange={(e) => setFormEditMiembro({ ...formEditMiembro, dni: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Celular</label>
-                  <input
-                    type="text"
-                    maxLength={9}
-                    value={formEditMiembro.celular}
-                    onChange={(e) => setFormEditMiembro({ ...formEditMiembro, celular: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nombres *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formEditMiembro.nombres}
-                    onChange={(e) => setFormEditMiembro({ ...formEditMiembro, nombres: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Apellido Paterno *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formEditMiembro.apellidoPaterno}
-                    onChange={(e) => setFormEditMiembro({ ...formEditMiembro, apellidoPaterno: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Apellido Materno</label>
-                  <input
-                    type="text"
-                    value={formEditMiembro.apellidoMaterno}
-                    onChange={(e) => setFormEditMiembro({ ...formEditMiembro, apellidoMaterno: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Correo Electrónico *</label>
-                  <input
-                    type="email"
-                    required
-                    value={formEditMiembro.correoElectronico}
-                    onChange={(e) => setFormEditMiembro({ ...formEditMiembro, correoElectronico: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate("/home/miembros-equipo")}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                >
-                  Volver a la Lista
-                </button>
-                <button
-                  type="submit"
-                  disabled={guardando}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>{guardando ? "Guardando..." : "Actualizar Miembro de Equipo"}</span>
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm">
-              <UserPlus className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-              Selecciona un miembro de equipo del selector para cargar y editar su información.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 5. REGISTRAR SOLICITUD DE COMPRA (/home/solicitudes/registrar) */}
-      {/* ========================================================================= */}
-      {path.includes("solicitudes/registrar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600">
-              <FileText className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Nueva Solicitud de Compra</h2>
-              <p className="text-xs text-slate-500">Genera una solicitud de requerimiento de insumos en orden_compra.</p>
-            </div>
-          </div>
-
-          {esMiembroEquipo && (
-            <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-2xl flex items-center gap-3 text-purple-900 text-xs font-semibold">
-              <AlertCircle className="w-5 h-5 text-purple-600 shrink-0" />
-              <div>
-                <p className="font-bold">Acceso Restringido para Miembro de Equipo</p>
-                <p className="text-purple-700">La emisión de nuevas solicitudes de compra está restringida. Solo personal técnico y gerencial puede generar solicitudes.</p>
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={handleGuardarSolicitud} className="space-y-4">
-            <fieldset disabled={esMiembroEquipo} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Producto Requerido *</label>
-                <select
-                  required
-                  value={formSolicitud.idProducto}
-                  onChange={(e) => setFormSolicitud({ ...formSolicitud, idProducto: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <option value="">-- Selecciona el producto a solicitar --</option>
-                  {items.map((it) => (
-                    <option key={it.idProducto} value={it.idProducto}>
-                      [{it.codigo}] {it.nombre} ({it.unidad})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad a Solicitar *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    placeholder="Ej. 50.00"
-                    value={formSolicitud.cantidad}
-                    onChange={(e) => setFormSolicitud({ ...formSolicitud, cantidad: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Motivo / Justificación</label>
-                  <input
-                    type="text"
-                    value={formSolicitud.motivo}
-                    onChange={(e) => setFormSolicitud({ ...formSolicitud, motivo: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-            </fieldset>
-
-            <div className="pt-4 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/home/solicitudes")}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-              >
-                Volver a Solicitudes
-              </button>
-              <button
-                type="submit"
-                disabled={guardando || esMiembroEquipo}
-                className={`px-6 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center gap-2 ${
-                  esMiembroEquipo
-                    ? "bg-slate-400 cursor-not-allowed opacity-60 shadow-none"
-                    : "bg-purple-600 hover:bg-purple-700 shadow-purple-600/30"
-                }`}
-              >
-                <Save className="w-4 h-4" />
-                <span>
-                  {esMiembroEquipo
-                    ? "Acceso Restringido"
-                    : guardando
-                    ? "Emitiendo..."
-                    : "Emitir Solicitud en Base de Datos"}
-                </span>
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 5.1 DETALLE DE LA SOLICITUD (/home/solicitudes/detalle) */}
-      {/* ========================================================================= */}
-      {path.includes("solicitudes/detalle") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Detalle de Solicitud de Compra</h2>
-                <p className="text-xs text-slate-500">Visualiza la información completa y los ítems requeridos.</p>
-              </div>
-            </div>
-            {esMiembroEquipo ? (
-              <button
-                onClick={() => navigate("/home/solicitudes")}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-              >
-                Volver a Solicitudes
-              </button>
-            ) : (
-              <button
-                onClick={() => navigate("/home/solicitudes/editar")}
-                className="px-4 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center gap-2"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Ir a Editar Solicitud</span>
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <label className="text-xs font-bold uppercase text-slate-600 shrink-0">Seleccionar Solicitud:</label>
-            <select
-              value={detalleSolicitudId}
-              onChange={(e) => setDetalleSolicitudId(e.target.value)}
-              className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold flex-1"
-            >
-              {solicitudes.map((s) => (
-                <option key={s.idOrdenCompra} value={s.idOrdenCompra}>
-                  [{s.codigo}] - Fecha: {s.fechaRegistro} - Estado: {s.estadoOrdenCompra} ({s.detalles?.length || 0} ítems)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {(() => {
-            const sol = solicitudes.find((x) => String(x.idOrdenCompra) === String(detalleSolicitudId));
-            if (!sol) {
-              return (
-                <div className="p-8 text-center text-slate-400 border border-dashed rounded-2xl">
-                  No hay solicitudes registradas para inspeccionar.
-                </div>
-              );
-            }
-            return (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Código</span>
-                    <span className="text-base font-extrabold text-purple-700">{sol.codigo}</span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Fecha de Emisión</span>
-                    <span className="text-base font-bold text-slate-800">{sol.fechaRegistro}</span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Estado</span>
-                    <span className="inline-block mt-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
-                      {sol.estadoOrdenCompra}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="border border-slate-100 rounded-2xl overflow-hidden">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-100">
-                      <tr>
-                        <th className="py-3 px-4">Código Producto</th>
-                        <th className="py-3 px-4">Nombre del Producto</th>
-                        <th className="py-3 px-4 text-right">Cantidad Solicitada</th>
-                        <th className="py-3 px-4">Unidad</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs">
-                      {sol.detalles?.map((d: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-slate-50/60">
-                          <td className="py-3 px-4 font-bold text-indigo-600">{d.productoCodigo || "PROD"}</td>
-                          <td className="py-3 px-4 font-bold text-slate-900">{d.productoNombre}</td>
-                          <td className="py-3 px-4 text-right font-extrabold text-slate-900">{d.cantidadSolicitada}</td>
-                          <td className="py-3 px-4 text-slate-500">{d.unidad}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 5.2 EDITAR SOLICITUD (/home/solicitudes/editar) */}
-      {/* ========================================================================= */}
-      {path.includes("solicitudes/editar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600">
               <Edit3 className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Modificar Solicitud de Compra</h2>
-              <p className="text-xs text-slate-500">Actualiza el estado de aprobación o la cantidad solicitada.</p>
-            </div>
-          </div>
-
-          {esMiembroEquipo && (
-            <div className="p-4 mb-6 bg-purple-50 border border-purple-200 rounded-2xl flex items-center gap-3 text-purple-900 text-xs font-semibold">
-              <AlertCircle className="w-5 h-5 text-purple-600 shrink-0" />
-              <div>
-                <p className="font-bold">Acceso Restringido para Miembro de Equipo</p>
-                <p className="text-purple-700">La modificación de solicitudes de compra está restringida para tu rol. Solo personal técnico o gerencial puede cambiar el estado de solicitudes.</p>
-              </div>
-            </div>
-          )}
-
-          <div className="mb-5">
-            <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-              Seleccionar Solicitud a Editar *
-            </label>
-            <select
-              disabled={esMiembroEquipo}
-              value={selectedSolicitudId}
-              onChange={(e) => handleSelectEditSolicitud(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-purple-50/50 border border-purple-200 rounded-xl text-sm font-semibold text-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <option value="">-- Selecciona una solicitud --</option>
-              {solicitudes.map((s) => (
-                <option key={s.idOrdenCompra} value={s.idOrdenCompra}>
-                  [{s.codigo}] - Estado actual: {s.estadoOrdenCompra} ({s.fechaRegistro})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {selectedSolicitudId ? (
-            <form onSubmit={handleActualizarSolicitud} className="space-y-4">
-              <fieldset disabled={esMiembroEquipo} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Estado de la Solicitud *</label>
-                    <select
-                      value={formEditSolicitud.estadoOrdenCompra}
-                      onChange={(e) => setFormEditSolicitud({ ...formEditSolicitud, estadoOrdenCompra: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-purple-900 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      <option value="PENDIENTE">PENDIENTE (En evaluación)</option>
-                      <option value="APROBADA">🟢 APROBADA (Proceder a compra)</option>
-                      <option value="RECHAZADA">🔴 RECHAZADA (No autorizada)</option>
-                      <option value="ATENDIDA">🔵 ATENDIDA (Mercadería recibida)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad Ajustada</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formEditSolicitud.cantidad}
-                      onChange={(e) => setFormEditSolicitud({ ...formEditSolicitud, cantidad: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate("/home/solicitudes")}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                >
-                  Volver a Solicitudes
-                </button>
-                <button
-                  type="submit"
-                  disabled={guardando || esMiembroEquipo}
-                  className={`px-6 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center gap-2 ${
-                    esMiembroEquipo
-                      ? "bg-slate-400 cursor-not-allowed opacity-60 shadow-none"
-                      : "bg-purple-600 hover:bg-purple-700 shadow-purple-600/30"
-                  }`}
-                >
-                  <Save className="w-4 h-4" />
-                  <span>
-                    {esMiembroEquipo
-                      ? "Acceso Restringido"
-                      : guardando
-                      ? "Guardando..."
-                      : "Actualizar Solicitud"}
-                  </span>
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm">
-              <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-              Selecciona una solicitud para cargar y modificar su estado.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 5.3 DETALLES DE ÓRDENES DE COMPRA (/home/ordenes-compra/detalle) */}
-      {/* ========================================================================= */}
-      {path.includes("ordenes-compra/detalle") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
-                <ShoppingCart className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Detalle de Órdenes de Compra</h2>
-                <p className="text-xs text-slate-500">Documento de compra emitido a proveedores de insumos.</p>
-              </div>
-            </div>
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-2"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Imprimir Ficha</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <label className="text-xs font-bold uppercase text-slate-600 shrink-0">Seleccionar Orden:</label>
-            <select
-              value={detalleOrdenId}
-              onChange={(e) => setDetalleOrdenId(e.target.value)}
-              className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold flex-1"
-            >
-              {solicitudes.map((s) => (
-                <option key={s.idOrdenCompra} value={s.idOrdenCompra}>
-                  Orden {s.codigo} - Emisión: {s.fechaRegistro} - ({s.estadoOrdenCompra})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {(() => {
-            const ord = solicitudes.find((x) => String(x.idOrdenCompra) === String(detalleOrdenId));
-            if (!ord) {
-              return (
-                <div className="p-8 text-center text-slate-400 border border-dashed rounded-2xl">
-                  No se encontraron órdenes de compra registradas.
-                </div>
-              );
-            }
-            return (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Número de Orden</span>
-                    <span className="text-base font-extrabold text-amber-700">{ord.codigo}</span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Fecha Emisión</span>
-                    <span className="text-base font-bold text-slate-800">{ord.fechaRegistro}</span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Estado Actual</span>
-                    <span className="inline-block mt-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
-                      {ord.estadoOrdenCompra}
-                    </span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase block">Almacén Destino</span>
-                    <span className="text-sm font-bold text-slate-700">Almacén Central</span>
-                  </div>
-                </div>
-
-                <div className="border border-slate-100 rounded-2xl overflow-hidden">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-100">
-                      <tr>
-                        <th className="py-3 px-4">Código</th>
-                        <th className="py-3 px-4">Descripción de Insumo</th>
-                        <th className="py-3 px-4 text-right">Cantidad Requerida</th>
-                        <th className="py-3 px-4">Unidad</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs">
-                      {ord.detalles?.map((d: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-slate-50/60">
-                          <td className="py-3 px-4 font-bold text-indigo-600">{d.productoCodigo || "IN"}</td>
-                          <td className="py-3 px-4 font-bold text-slate-900">{d.productoNombre}</td>
-                          <td className="py-3 px-4 text-right font-extrabold text-slate-900">{d.cantidadSolicitada}</td>
-                          <td className="py-3 px-4 text-slate-500">{d.unidad}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 6. REALIZAR INVENTARIO (/home/inventario-realizar) */}
-      {/* ========================================================================= */}
-      {path.includes("inventario-realizar") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
-              <ClipboardCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Formulario: Realizar Inventario Físico</h2>
+              <h2 className="text-xl font-bold text-slate-900">Formulario: Editar Ficha de Miembro de Equipo</h2>
               <p className="text-xs text-slate-500">
-                Registra el conteo físico en la base de datos y descarga inmediatamente el acta/reporte oficial en PDF.
+                Selecciona al miembro y actualiza sus datos o su estado de registro.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleGuardarInventario} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Fecha del Inventario *</label>
-                <input
-                  type="date"
-                  required
-                  value={formInventario.fechaInventario}
-                  onChange={(e) => setFormInventario({ ...formInventario, fechaInventario: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Producto a Auditar *</label>
-                <select
-                  required
-                  value={formInventario.idProducto}
-                  onChange={(e) => setFormInventario({ ...formInventario, idProducto: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                >
-                  <option value="">-- Selecciona el ítem auditado --</option>
-                  {items.map((it) => (
-                    <option key={it.idProducto} value={it.idProducto}>
-                      [{it.codigo}] {it.nombre} ({it.unidad}) &mdash; Stock en sistema: {it.stockActual ?? it.stockMinimo}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {mensajeExito && (
+            <div className="mb-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{mensajeExito}</span>
             </div>
+          )}
 
+          {mensajeError && (
+            <div className="mb-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{mensajeError}</span>
+            </div>
+          )}
+
+          <div className="mb-6">
+            <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+              Seleccionar Miembro de Equipo a Modificar *
+            </label>
+            <select
+              value={selectedMiembroId}
+              onChange={(e) => handleSelectEditMiembro(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold"
+            >
+              {miembros.length === 0 && <option value="">No hay miembros cargados</option>}
+              {miembros.map((mb) => (
+                <option key={mb.idUsuario} value={mb.idUsuario}>
+                  {mb.nombreCompleto || `${mb.nombres} ${mb.apellidoPaterno}`} (DNI: {mb.dni} - Correo: {mb.correoElectronico})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <form onSubmit={handleActualizarMiembro} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Stock Físico Contado *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  placeholder="Ej. 18.50"
-                  value={formInventario.stockContado}
-                  onChange={(e) => setFormInventario({ ...formInventario, stockContado: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Observaciones del Conteo</label>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">DNI (8 dígitos)</label>
                 <input
                   type="text"
-                  value={formInventario.observacion}
-                  onChange={(e) => setFormInventario({ ...formInventario, observacion: e.target.value })}
+                  maxLength={8}
+                  value={formEditMiembro.dni}
+                  onChange={(e) => setFormEditMiembro({ ...formEditMiembro, dni: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Celular (9 dígitos)</label>
+                <input
+                  type="text"
+                  maxLength={9}
+                  value={formEditMiembro.celular}
+                  onChange={(e) => setFormEditMiembro({ ...formEditMiembro, celular: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nombres</label>
+                <input
+                  type="text"
+                  value={formEditMiembro.nombres}
+                  onChange={(e) => setFormEditMiembro({ ...formEditMiembro, nombres: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Apellido Paterno</label>
+                <input
+                  type="text"
+                  value={formEditMiembro.apellidoPaterno}
+                  onChange={(e) => setFormEditMiembro({ ...formEditMiembro, apellidoPaterno: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Apellido Materno</label>
+                <input
+                  type="text"
+                  value={formEditMiembro.apellidoMaterno}
+                  onChange={(e) => setFormEditMiembro({ ...formEditMiembro, apellidoMaterno: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Correo Electrónico</label>
+                <input
+                  type="email"
+                  value={formEditMiembro.correoElectronico}
+                  onChange={(e) => setFormEditMiembro({ ...formEditMiembro, correoElectronico: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
                 />
               </div>
             </div>
 
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              {ultimoInventarioPDF ? (
-                <button
-                  type="button"
-                  onClick={() => generarPDFInventario(ultimoInventarioPDF)}
-                  className="px-4 py-2.5 rounded-xl border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 text-xs font-bold flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Volver a Descargar Acta PDF</span>
-                </button>
-              ) : (
-                <span className="text-xs text-slate-400 italic">El PDF se descargará automáticamente al guardar.</span>
-              )}
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Estado de Registro</label>
+              <select
+                value={formEditMiembro.estadoRegistro}
+                onChange={(e) => setFormEditMiembro({ ...formEditMiembro, estadoRegistro: parseInt(e.target.value) })}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              >
+                <option value={1}>Activo (Habilitado)</option>
+                <option value={0}>Inactivo (Deshabilitado)</option>
+              </select>
+            </div>
 
+            <div className="pt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => navigate("/home/miembros-equipo")}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              >
+                Volver a la Lista
+              </button>
               <button
                 type="submit"
                 disabled={guardando}
-                className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-600/30 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 flex items-center gap-2 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
-                <span>{guardando ? "Guardando y Generando PDF..." : "Guardar en BD y Descargar PDF"}</span>
+                <span>{guardando ? "Guardando..." : "Actualizar Miembro"}</span>
               </button>
             </div>
           </form>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* ========================================================================= */}
-      {/* TABLAS GENERALES CUANDO SE VISITA EL PADRE */}
-      {/* ========================================================================= */}
-
-      {/* Catálogo de Ítems */}
-      {path === "/home/items" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-[#0B0E0C]">Catálogo Maestro de Productos</h2>
-              <p className="text-xs text-slate-500">Consulta y administración de insumos, materias primas y existencias de almacén.</p>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => navigate("/home/items/editar")}
-                className="px-4 py-2.5 rounded-xl border border-[#063D2A]/30 bg-[#F3F1EA] hover:bg-[#063D2A]/10 text-[#063D2A] text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
-              >
-                <Edit3 className="w-4 h-4 text-[#063D2A]" />
-                <span>Editar Ítem</span>
-              </button>
-              <button
-                onClick={() => navigate("/home/items/agregar")}
-                className="px-4 py-2.5 rounded-xl bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Agregar Nuevo Ítem</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Barra de Filtros y Búsqueda estilo Barbarian (Imagen 2) */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 bg-[#F3F1EA]/80 rounded-2xl border border-slate-200/80">
-            {/* Buscador */}
-            <div className="relative md:col-span-6">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={filtroBusqueda}
-                onChange={(e) => setFiltroBusqueda(e.target.value)}
-                placeholder="Buscar por código, producto, categoría o proveedor"
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40 focus:border-[#28D978]"
-              />
-            </div>
-
-            {/* Selector Categoría */}
-            <div className="md:col-span-3">
-              <select
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40"
-              >
-                <option value="TODAS">Todas las categorías</option>
-                {Array.from(new Set(items.map((it) => it.categoriaNombre || "General"))).map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Selector Proveedor */}
-            <div className="md:col-span-3">
-              <select
-                value={filtroProveedor}
-                onChange={(e) => setFiltroProveedor(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#28D978]/40"
-              >
-                <option value="TODOS">Todos los proveedores</option>
-                {Array.from(new Set(items.map((it) => it.proveedorNombre || "Sin asignar"))).map((prov) => (
-                  <option key={prov} value={prov}>{prov}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Contador de productos y Tabla estilo Barbarian */}
-          {(() => {
-            const q = filtroBusqueda.toLowerCase().trim();
-            const itemsFiltrados = items.filter((it) => {
-              const matchQ =
-                !q ||
-                it.codigo?.toLowerCase().includes(q) ||
-                it.nombre?.toLowerCase().includes(q) ||
-                it.categoriaNombre?.toLowerCase().includes(q) ||
-                it.proveedorNombre?.toLowerCase().includes(q);
-              const matchCat = filtroCategoria === "TODAS" || (it.categoriaNombre || "General") === filtroCategoria;
-              const matchProv = filtroProveedor === "TODOS" || (it.proveedorNombre || "Sin asignar") === filtroProveedor;
-              return matchQ && matchCat && matchProv;
-            });
-
-            return (
-              <>
-                <div className="text-xs text-slate-500 font-medium px-1">
-                  Mostrando <strong className="text-[#063D2A] font-bold">{itemsFiltrados.length}</strong> de <strong className="text-slate-800 font-bold">{items.length}</strong> productos
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-[#F3F1EA] text-slate-600 text-[11px] uppercase font-bold border-b border-slate-200">
-                      <tr>
-                        <th className="py-3 px-4">Código</th>
-                        <th className="py-3 px-4">Producto</th>
-                        <th className="py-3 px-4">Categoría</th>
-                        <th className="py-3 px-4">Proveedor</th>
-                        <th className="py-3 px-4">Unidad</th>
-                        <th className="py-3 px-4 text-right">Stock Mínimo</th>
-                        <th className="py-3 px-4 text-right">Stock Actual</th>
-                        <th className="py-3 px-4 text-center">Estado</th>
-                        <th className="py-3 px-4 text-right">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
-                      {itemsFiltrados.map((it) => (
-                        <tr key={it.idProducto} className="hover:bg-[#F3F1EA]/60 transition-colors">
-                          <td className="py-3 px-4">
-                            <span className="px-2.5 py-1 rounded-lg bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/30 font-bold text-xs inline-block">
-                              {it.codigo}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 font-bold text-[#0B0E0C]">{it.nombre}</td>
-                          <td className="py-3 px-4 text-slate-600">{it.categoriaNombre || "General"}</td>
-                          <td className="py-3 px-4 text-slate-600">
-                            <div className="flex items-center gap-1.5">
-                              <Truck className="w-3.5 h-3.5 text-[#28D978] shrink-0" />
-                              <span>{it.proveedorNombre || "Sin asignar"}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="font-semibold text-slate-600 uppercase">{it.unidad}</span>
-                          </td>
-                          <td className="py-3 px-4 text-right font-bold text-slate-600">{it.stockMinimo} {it.unidad}</td>
-                          <td className="py-3 px-4 text-right font-extrabold text-[#063D2A]">{it.stockActual ?? it.stockMinimo} {it.unidad}</td>
-                          <td className="py-3 px-4 text-center">
-                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/30">
-                              Activo
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <button
-                              onClick={() => {
-                                handleSelectEditItem(String(it.idProducto));
-                                navigate("/home/items/editar");
-                              }}
-                              title="Editar ítem"
-                              className="p-1.5 rounded-lg text-[#063D2A] hover:bg-[#E8F8F0] border border-[#063D2A]/20 transition-colors cursor-pointer"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      )}
-
-      {/* Control de Stock */}
-      {path === "/home/stock" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Gestión de Stock ({stockList.length} ítems auditados)</h2>
-              <p className="text-xs text-slate-500">Existencias actuales sincronizadas directamente con la base de datos PostgreSQL.</p>
-            </div>
-            {!esMiembroEquipo && (
-              <button
-                onClick={() => navigate("/home/stock/editar")}
-                className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
-              >
-                <Sliders className="w-4 h-4" />
-                <span>Editar / Corregir Stock</span>
-              </button>
-            )}
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-100">
-                <tr>
-                  <th className="py-3 px-4">Código</th>
-                  <th className="py-3 px-4">Producto</th>
-                  <th className="py-3 px-4">Unidad</th>
-                  <th className="py-3 px-4 text-right">Stock Mínimo</th>
-                  <th className="py-3 px-4 text-right">Existencias Actuales</th>
-                  <th className="py-3 px-4 text-center">Estado</th>
-                  <th className="py-3 px-4 text-right">Ajuste</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
-                {stockList.map((st) => (
-                  <tr key={st.idProducto} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-amber-600">{st.codigo}</td>
-                    <td className="py-3 px-4 font-bold text-slate-900">{st.nombre}</td>
-                    <td className="py-3 px-4">{st.unidad}</td>
-                    <td className="py-3 px-4 text-right font-semibold text-slate-500">{st.stockMinimo}</td>
-                    <td className="py-3 px-4 text-right font-extrabold text-slate-900 text-sm">{st.stockActual}</td>
-                    <td className="py-3 px-4 text-center">
-                      {st.alertaStock ? (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
-                          Bajo Stock
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                          Normal
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      {esMiembroEquipo ? (
-                        <button
-                          disabled
-                          title="Ajuste de stock no habilitado para miembros de equipo"
-                          className="p-1.5 text-slate-300 bg-slate-50 rounded-lg border border-slate-200 cursor-not-allowed opacity-50"
-                        >
-                          <Sliders className="w-4 h-4" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            setFormStock({
-                              idProducto: String(st.idProducto),
-                              nuevoStock: String(st.stockActual),
-                              motivo: "Corrección por inventario físico",
-                              observacion: "",
-                            });
-                            navigate("/home/stock/editar");
-                          }}
-                          title="Ajustar stock de este ítem"
-                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg border border-amber-200"
-                        >
-                          <Sliders className="w-4 h-4" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Movimientos (Kardex) */}
-      {path === "/home/movimientos" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Entradas y Salidas de Almacén (Kardex)</h2>
-              <p className="text-xs text-slate-500">Historial de transacciones de inventario en la base de datos.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate("/home/movimientos/editar")}
-                className="px-4 py-2.5 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold flex items-center gap-2"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Editar Movimiento</span>
-              </button>
-              <button
-                onClick={() => navigate("/home/movimientos/registrar")}
-                className="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Registrar Movimiento</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-100">
-                <tr>
-                  <th className="py-3 px-4">Código</th>
-                  <th className="py-3 px-4">Tipo</th>
-                  <th className="py-3 px-4">Motivo</th>
-                  <th className="py-3 px-4">Fecha</th>
-                  <th className="py-3 px-4">Registrado por</th>
-                  <th className="py-3 px-4">Detalle Ítems</th>
-                  <th className="py-3 px-4 text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
-                {movimientos.map((m) => {
-                  const esPropio = Number(m.usuarioRegistro) === Number(currentUserId);
-                  return (
-                  <tr key={m.idMovimiento} className="hover:bg-[#F3F1EA]/60 transition-colors">
-                    <td className="py-3 px-4">
-                      <span className="px-2.5 py-1 rounded-lg bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/30 font-bold text-xs inline-block">
-                        {m.codigo}
-                      </span>
-                      {esPropio && (
-                        <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#28D978]/20 text-[#063D2A] border border-[#28D978]/30">
-                          Propio
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 font-bold">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${m.tipoMovimiento === "ENTRADA" ? "bg-[#E8F8F0] text-[#063D2A] border border-[#28D978]/40" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
-                        {m.tipoMovimiento}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-[#0B0E0C] font-medium">{m.motivoMovimiento}</td>
-                    <td className="py-3 px-4 text-slate-500">{m.fechaMovimiento}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-slate-800">
-                          {m.usuarioNombre || (esPropio ? `${usuario?.nombres || "Usuario"} ${usuario?.apellidoPaterno || ""}`.trim() : "Personal de Almacén")}
-                        </span>
-                        {esPropio && (
-                          <span className="text-[10px] text-[#063D2A] font-extrabold bg-[#28D978]/20 px-1.5 py-0.5 rounded-md border border-[#28D978]/30">(Tú)</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-slate-600">
-                      {m.detalles && m.detalles.length > 0 ? (
-                        <span>{m.detalles.map((d: any) => `${d.productoNombre} (${d.cantidad} ${d.unidad})`).join(", ")}</span>
-                      ) : (
-                        <span>{m.observacion || "Sin detalle"}</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      {(() => {
-                        const esPropio = Number(m.usuarioRegistro) === Number(currentUserId);
-                        const puedeEditar = !esMiembroEquipo || esPropio;
-                        if (!puedeEditar) {
-                          return (
-                            <button
-                              disabled
-                              title="Solo puedes editar movimientos registrados por ti mismo"
-                              className="p-1.5 rounded-lg text-slate-300 border border-slate-200 cursor-not-allowed opacity-40"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                          );
-                        }
-                        return (
-                          <button
-                            onClick={() => {
-                              handleSelectEditMov(String(m.idMovimiento));
-                              navigate("/home/movimientos/editar");
-                            }}
-                            title={esMiembroEquipo ? "Editar este movimiento (registrado por ti)" : "Editar movimiento"}
-                            className="p-1.5 rounded-lg text-[#063D2A] hover:bg-[#E8F8F0] border border-[#063D2A]/20 transition-colors cursor-pointer"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        );
-                      })()}
-                    </td>
-                  </tr>
-                );
-              })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Miembros de Equipo */}
-      {path === "/home/miembros-equipo" && (
+  // 1.3 Lista de Miembros de Equipo (/home/miembros-equipo)
+  if (path === "/home/miembros-equipo") {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-300">
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-900">Gestión de Miembros de Equipo ({miembros.length})</h2>
-              <p className="text-xs text-slate-500">Personal operativo autorizado para conteo y recepción.</p>
+              <p className="text-xs text-slate-500">Personal operativo autorizado para verificación y recepción de existencias.</p>
             </div>
             {perfilActivo?.idPerfil !== 3 && (
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigate("/home/miembros-equipo/editar")}
-                  className="px-4 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-2 cursor-pointer"
                 >
                   <Edit3 className="w-4 h-4" />
                   <span>Editar Miembro</span>
                 </button>
                 <button
                   onClick={() => navigate("/home/miembros-equipo/agregar")}
-                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm cursor-pointer"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>Agregar Miembro</span>
@@ -2403,268 +549,70 @@ export const ModuloOperativoPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
-                {miembros.map((mb) => (
-                  <tr key={mb.idUsuario} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900">{mb.dni}</td>
-                    <td className="py-3 px-4 font-bold text-emerald-700">{mb.nombreCompleto}</td>
-                    <td className="py-3 px-4 text-slate-500">{mb.correoElectronico}</td>
-                    <td className="py-3 px-4">{mb.celular || "—"}</td>
-                    <td className="py-3 px-4 text-center">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                        Miembro de equipo
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          handleSelectEditMiembro(String(mb.idUsuario));
-                          navigate("/home/miembros-equipo/editar");
-                        }}
-                        title="Editar ficha"
-                        className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 border border-emerald-200"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                {miembros.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                      {loadingMiembros ? "Cargando miembros de equipo..." : "No hay miembros de equipo registrados."}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Solicitudes de compra */}
-      {(path === "/home/solicitudes" || path === "/home/ordenes-compra") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Solicitudes y Órdenes de Compra ({solicitudes.length})</h2>
-              <p className="text-xs text-slate-500">Gestión de abastecimiento y requerimientos de insumos.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate("/home/solicitudes/detalle")}
-                className="px-4 py-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                <span>Ver Detalle</span>
-              </button>
-              {!esMiembroEquipo && (
-                <>
-                  <button
-                    onClick={() => navigate("/home/solicitudes/editar")}
-                    className="px-4 py-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center gap-2"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    <span>Editar Solicitud</span>
-                  </button>
-                  <button
-                    onClick={() => navigate("/home/solicitudes/registrar")}
-                    className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Nueva Solicitud</span>
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-100">
-                <tr>
-                  <th className="py-3 px-4">Código</th>
-                  <th className="py-3 px-4">Fecha Emisión</th>
-                  <th className="py-3 px-4">Estado</th>
-                  <th className="py-3 px-4">Ítems Solicitados</th>
-                  <th className="py-3 px-4 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-800 text-xs font-medium">
-                {solicitudes.map((sol) => (
-                  <tr key={sol.idOrdenCompra} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-purple-600">{sol.codigo}</td>
-                    <td className="py-3 px-4 text-slate-500">{sol.fechaRegistro}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900">
-                        {sol.estadoOrdenCompra}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-600">
-                      {sol.detalles && sol.detalles.length > 0 ? (
-                        <span>{sol.detalles.map((d: any) => `${d.productoNombre} (${d.cantidadSolicitada} ${d.unidad})`).join(", ")}</span>
-                      ) : (
-                        <span>Sin ítems detallados</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right space-x-1">
-                      <button
-                        onClick={() => {
-                          setDetalleSolicitudId(String(sol.idOrdenCompra));
-                          navigate("/home/solicitudes/detalle");
-                        }}
-                        title="Ver detalle"
-                        className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 border border-purple-200"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      {!esMiembroEquipo && (
+                ) : (
+                  miembros.map((mb) => (
+                    <tr key={mb.idUsuario} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4 font-bold text-slate-900">{mb.dni}</td>
+                      <td className="py-3 px-4 font-bold text-emerald-700">{mb.nombreCompleto}</td>
+                      <td className="py-3 px-4 text-slate-500">{mb.correoElectronico}</td>
+                      <td className="py-3 px-4">{mb.celular || "—"}</td>
+                      <td className="py-3 px-4 text-center">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          Miembro de equipo
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
                         <button
                           onClick={() => {
-                            handleSelectEditSolicitud(String(sol.idOrdenCompra));
-                            navigate("/home/solicitudes/editar");
+                            handleSelectEditMiembro(String(mb.idUsuario));
+                            navigate("/home/miembros-equipo/editar");
                           }}
-                          title="Modificar estado"
-                          className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 border border-purple-200"
+                          title="Editar ficha"
+                          className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 border border-emerald-200 cursor-pointer"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* Reportes de inventario */}
-      {path.includes("reportes") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6">
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-              <FileBarChart className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Reportes de Inventario y Movimientos</h2>
-              <p className="text-xs text-slate-500">Genera informes ejecutivos y descarga los balances en PDF o Excel.</p>
-            </div>
-          </div>
+  // ===========================================================================
+  // 2. TODOS LOS OTROS MÓDULOS / FORMULARIOS:
+  // "a excepción de gestión de usuarios y gestión de miembros de equipo, todos los otros formularios
+  // solo ponme el título y no me pongas cuadros ni nada solo su título correspondiente, aún no llego a eso"
+  // ===========================================================================
+  const info = getModuloInfo(path);
+  const IconComponent = info.icono;
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-              <span className="text-xs font-bold text-slate-500 uppercase block">Total Ítems en Catálogo</span>
-              <span className="text-2xl font-black text-slate-900 mt-1 block">{items.length}</span>
-              <span className="text-[11px] text-indigo-600 font-semibold">Productos registrados</span>
-            </div>
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
-              <span className="text-xs font-bold text-emerald-700 uppercase block">Ítems con Stock Normal</span>
-              <span className="text-2xl font-black text-emerald-800 mt-1 block">
-                {stockList.filter((s) => !s.alertaStock).length}
-              </span>
-              <span className="text-[11px] text-emerald-600 font-semibold">Sin riesgo de desabastecimiento</span>
-            </div>
-            <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl">
-              <span className="text-xs font-bold text-rose-700 uppercase block">Alertas de Bajo Stock</span>
-              <span className="text-2xl font-black text-rose-800 mt-1 block">
-                {stockList.filter((s) => s.alertaStock).length}
-              </span>
-              <span className="text-[11px] text-rose-600 font-semibold">Requieren compra urgente</span>
-            </div>
-          </div>
-
-          {/* Botones de Descarga PDF y Excel */}
-          <div className="p-6 rounded-2xl bg-indigo-50/50 border border-indigo-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-extrabold text-indigo-950">Descargas Disponibles</h3>
-              <p className="text-xs text-slate-600 mt-0.5">Exporta el inventario completo con sus existencias y estados calculados.</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleDescargarReportePDF}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-indigo-600/20"
-              >
-                <FileDown className="w-4 h-4" />
-                <span>Descargar en PDF</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleDescargarReporteExcel}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-emerald-600/20"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Descargar en Excel</span>
-              </button>
-            </div>
-          </div>
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-[#063D2A]/10 border border-[#28D978]/30 flex items-center justify-center text-[#063D2A] shrink-0">
+          <IconComponent className="w-6 h-6 text-[#063D2A]" />
         </div>
-      )}
-
-      {/* Actividades del sistema */}
-      {path.includes("actividades") && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600">
-                <Activity className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Seguimiento de Actividades (Auditoría en Tiempo Real)</h2>
-                <p className="text-xs text-slate-500">Bitácora detallada de qué usuario realizó cada movimiento, edición o agregación.</p>
-              </div>
-            </div>
-            <button
-              onClick={cargarDatos}
-              disabled={loading}
-              className="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span>Actualizar Bitácora</span>
-            </button>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            {actividades.length === 0 ? (
-              <div className="py-12 text-center text-slate-400">
-                <Activity className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                No hay actividades registradas en la bitácora aún.
-              </div>
-            ) : (
-              actividades.map((act) => {
-                let badgeClass = "bg-slate-100 text-slate-700";
-                if (act.tipoAccion === "CREAR") badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
-                if (act.tipoAccion === "EDITAR") badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
-                if (act.tipoAccion === "AJUSTE") badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
-                if (act.tipoAccion === "MOVIMIENTO") badgeClass = "bg-sky-100 text-sky-800 border-sky-200";
-                if (act.tipoAccion === "INVENTARIO") badgeClass = "bg-teal-100 text-teal-800 border-teal-200";
-                if (act.tipoAccion === "SOLICITUD") badgeClass = "bg-purple-100 text-purple-800 border-purple-200";
-                if (act.tipoAccion === "ELIMINAR") badgeClass = "bg-rose-100 text-rose-800 border-rose-200";
-
-                return (
-                  <div key={act.idActividad} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/70 px-3 rounded-xl transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center shrink-0 text-xs">
-                        {act.usuarioNombre?.charAt(0) || "U"}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900">{act.usuarioNombre}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-600">
-                            {act.usuarioRol}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}`}>
-                            {act.tipoAccion}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-600 mt-1 font-medium">{act.descripcion}</p>
-                      </div>
-                    </div>
-                    <span className="text-[11px] text-slate-400 font-semibold shrink-0 pl-11 sm:pl-0 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {act.fechaFormateada || act.fechaHora}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">
+            {info.titulo}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            {info.descripcion}
+          </p>
         </div>
-      )}
+      </div>
     </div>
   );
 };

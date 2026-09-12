@@ -128,7 +128,7 @@ export const DashboardHomePage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
-                    <span>Gestión y Auditoría de Usuarios</span>
+                    <span>Gestión, Edición y Habilitación de Usuarios</span>
                   </div>
                 </div>
               </div>

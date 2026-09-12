@@ -22,6 +22,7 @@ import {
   ShoppingCart,
   UserPlus,
   Edit3,
+  UserCheck,
 } from "lucide-react";
 
 interface PanelDashboardPageProps {
@@ -144,7 +145,7 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
             <span>Módulos y CRUDs del Panel Técnico</span>
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* CRUD Perfiles */}
             <Link
               to="/home/perfiles"
@@ -207,6 +208,28 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
               </div>
               <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700">
                 <span>Acceder al Módulo</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Habilitar y Editar Usuarios */}
+            <Link
+              to="/home/usuarios/editar"
+              className="p-6 rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/40 to-white hover:border-emerald-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mb-4 shadow-md shadow-emerald-600/20">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+                <h4 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                  Editar y Habilitar Usuarios
+                </h4>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Actualización de datos personales, reactivación directa de usuarios inhabilitados y control de estados.
+                </p>
+              </div>
+              <div className="pt-5 mt-4 border-t border-emerald-100 flex items-center justify-between text-xs font-bold text-emerald-700">
+                <span>Habilitar / Editar</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
@@ -322,10 +345,26 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 group-hover:text-amber-900">Gestión de Usuarios</h4>
-                  <p className="text-[11px] text-slate-500">Mantenimiento y edición</p>
+                  <p className="text-[11px] text-slate-500">Mantenimiento de cuentas</p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
+            </Link>
+
+            <Link
+              to="/home/usuarios/editar"
+              className="p-4 rounded-xl border border-slate-200 hover:border-emerald-400 bg-slate-50/60 hover:bg-emerald-50/30 transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800 group-hover:text-emerald-900">Habilitar / Editar Usuarios</h4>
+                  <p className="text-[11px] text-slate-500">Reactivación de accesos</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
             </Link>
 
             <Link

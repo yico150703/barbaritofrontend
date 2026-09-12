@@ -21,6 +21,7 @@ interface TablaGenericaProps<T> {
   nuevoLabel?: string;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
+  renderActions?: (item: T) => React.ReactNode;
   loading?: boolean;
   emptyText?: string;
   keyExtractor: (item: T) => string | number;
@@ -40,6 +41,7 @@ export function TablaGenerica<T>({
   nuevoLabel = "Nuevo Registro",
   onEdit,
   onDelete,
+  renderActions,
   loading = false,
   emptyText = "No se encontraron registros.",
   keyExtractor,
@@ -82,7 +84,7 @@ export function TablaGenerica<T>({
                   {col.header}
                 </th>
               ))}
-              {(onEdit || onDelete) && (
+              {(onEdit || onDelete || renderActions) && (
                 <th className="py-3.5 px-4 text-right">Acciones</th>
               )}
             </tr>
@@ -91,7 +93,7 @@ export function TablaGenerica<T>({
             {loading ? (
               <tr>
                 <td
-                  colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
+                  colSpan={columns.length + (onEdit || onDelete || renderActions ? 1 : 0)}
                   className="py-12 text-center text-slate-400"
                 >
                   <div className="w-8 h-8 border-3 border-[#063D2A] border-t-[#28D978] rounded-full animate-spin mx-auto mb-2" />
@@ -101,7 +103,7 @@ export function TablaGenerica<T>({
             ) : data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
+                  colSpan={columns.length + (onEdit || onDelete || renderActions ? 1 : 0)}
                   className="py-12 text-center text-slate-400"
                 >
                   <p className="text-sm font-medium">{emptyText}</p>
@@ -127,29 +129,33 @@ export function TablaGenerica<T>({
                     );
                   })}
 
-                  {/* Acciones Editar y Eliminar (Soft delete) */}
-                  {(onEdit || onDelete) && (
+                  {/* Acciones Personalizadas o Editar y Eliminar */}
+                  {(onEdit || onDelete || renderActions) && (
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <div className="inline-flex items-center gap-1.5">
-                        {onEdit && (
-                          <button
-                            onClick={() => onEdit(item)}
-                            title="Editar"
-                            className="p-1.5 text-slate-500 hover:text-[#063D2A] hover:bg-[#F3F1EA] rounded-lg transition-colors"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        )}
-                        {onDelete && (
-                          <button
-                            onClick={() => onDelete(item)}
-                            title="Desactivar (Borrado Lógico)"
-                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                      {renderActions ? (
+                        renderActions(item)
+                      ) : (
+                        <div className="inline-flex items-center gap-1.5">
+                          {onEdit && (
+                            <button
+                              onClick={() => onEdit(item)}
+                              title="Editar"
+                              className="p-1.5 text-slate-500 hover:text-[#063D2A] hover:bg-[#F3F1EA] rounded-lg transition-colors"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(item)}
+                              title="Desactivar (Borrado Lógico)"
+                              className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   )}
                 </tr>

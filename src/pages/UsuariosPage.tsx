@@ -5,7 +5,7 @@ import { Perfil, Usuario } from "../types";
 import { TablaGenerica, ColumnDef } from "../components/TablaGenerica";
 import { ModalGenerico } from "../components/ModalGenerico";
 import { FormField, FormActions } from "../components/FormularioGenerico";
-import { Users, UserPlus, CheckCircle2, AlertTriangle, Shield, Edit3, Eye, ArrowRight } from "lucide-react";
+import { Users, UserPlus, CheckCircle2, AlertTriangle, Shield, Edit3, Eye, ArrowRight, UserCheck, Trash2 } from "lucide-react";
 
 export const UsuariosPage: React.FC = () => {
   const location = useLocation();
@@ -18,6 +18,7 @@ export const UsuariosPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   // Estados para Modal Crear/Editar
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,6 +32,7 @@ export const UsuariosPage: React.FC = () => {
     correoElectronico: "",
     clave: "",
     perfiles_ids: [] as number[],
+    estadoRegistro: 1,
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [formLoading, setFormLoading] = useState(false);
@@ -39,12 +41,12 @@ export const UsuariosPage: React.FC = () => {
   const [deletingUser, setDeletingUser] = useState<Usuario | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Cargar lista de usuarios desde la API
+  // Cargar lista de usuarios desde la API (incluye inactivos para poder habilitarlos)
   const cargarUsuarios = async (p = page, q = search) => {
     try {
       setLoading(true);
       const res = await api.get("/usuarios", {
-        params: { page: p, limit: 8, q },
+        params: { page: p, limit: 10, q, incluir_inactivos: true },
       });
       if (res.data.success) {
         setUsuarios(res.data.usuarios || []);
@@ -96,6 +98,7 @@ export const UsuariosPage: React.FC = () => {
       correoElectronico: "",
       clave: "",
       perfiles_ids: [],
+      estadoRegistro: 1,
     });
     setFormError(null);
     setIsModalOpen(true);
@@ -112,9 +115,24 @@ export const UsuariosPage: React.FC = () => {
       correoElectronico: user.correoElectronico || "",
       clave: "", // Vacío si no se desea cambiar
       perfiles_ids: user.perfiles?.map((p) => p.idPerfil) || [],
+      estadoRegistro: user.estadoRegistro !== undefined ? user.estadoRegistro : 1,
     });
     setFormError(null);
     setIsModalOpen(true);
+  };
+
+  // Habilitar directamente a un usuario inactivo
+  const handleHabilitarUsuario = async (user: Usuario) => {
+    try {
+      setLoading(true);
+      await api.put(`/usuarios/${user.idUsuario}`, { estadoRegistro: 1 });
+      setFeedbackMsg(`¡El usuario ${user.nombres} ${user.apellidoPaterno} ha sido habilitado con éxito!`);
+      await cargarUsuarios(page, search);
+    } catch (err: any) {
+      setFeedbackMsg("Error al habilitar el usuario.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const togglePerfilSelection = (idPerfil: number) => {
@@ -153,6 +171,7 @@ export const UsuariosPage: React.FC = () => {
         celular: formData.celular.trim() || null,
         correoElectronico: formData.correoElectronico.trim().toLowerCase(),
         perfiles_ids: formData.perfiles_ids,
+        estadoRegistro: formData.estadoRegistro,
       };
 
       if (formData.clave) {
@@ -161,8 +180,10 @@ export const UsuariosPage: React.FC = () => {
 
       if (editingUser) {
         await api.put(`/usuarios/${editingUser.idUsuario}`, payload);
+        setFeedbackMsg(`¡Usuario ${payload.nombres} actualizado correctamente!`);
       } else {
         await api.post("/usuarios", payload);
+        setFeedbackMsg(`¡Usuario ${payload.nombres} creado correctamente!`);
       }
 
       setIsModalOpen(false);
@@ -257,6 +278,30 @@ export const UsuariosPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Mensaje de Confirmación / Éxito */}
+      {feedbackMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>{feedbackMsg}</span>
+          </div>
+          <button onClick={() => setFeedbackMsg(null)} className="text-emerald-700 hover:text-emerald-900 text-xs font-bold cursor-pointer">
+            Cerrar
+          </button>
+        </div>
+      )}
+
+      {/* Banner Informativo si se ingresó a la ruta /editar */}
+      {location.pathname.includes("editar") && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm font-medium flex items-center gap-3 shadow-xs">
+          <Edit3 className="w-5 h-5 text-amber-600 shrink-0" />
+          <div>
+            <span className="font-bold block text-amber-950">Modo Edición y Habilitación de Usuarios</span>
+            <span>Usa los botones de acción para editar datos personales o rehabilitar cuentas que se encuentren inactivas.</span>
+          </div>
+        </div>
+      )}
+
       {/* Encabezado Principal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
@@ -271,7 +316,7 @@ export const UsuariosPage: React.FC = () => {
             Mantenimiento de Usuarios y Perfiles
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Gestión completa de usuarios (Tabla <code>Usuario</code>) y vinculación de roles de acceso (Tabla <code>Usuario_Perfiles</code>).
+            Gestión completa de usuarios (Tabla <code>Usuario</code>), edición de cuentas y habilitación de acceso al sistema.
           </p>
         </div>
 
@@ -299,8 +344,38 @@ export const UsuariosPage: React.FC = () => {
         onPageChange={(p) => setPage(p)}
         onNuevo={handleOpenNuevo}
         nuevoLabel="Nuevo Usuario"
-        onEdit={handleOpenEdit}
-        onDelete={(u) => setDeletingUser(u)}
+        renderActions={(item) => (
+          <div className="inline-flex items-center gap-1.5">
+            <button
+              onClick={() => handleOpenEdit(item)}
+              title="Editar datos del usuario"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+              <span>Editar</span>
+            </button>
+
+            {item.estadoRegistro === 0 ? (
+              <button
+                onClick={() => handleHabilitarUsuario(item)}
+                title="Habilitar este usuario"
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
+              >
+                <UserCheck className="w-3.5 h-3.5 text-white" />
+                <span>Habilitar</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setDeletingUser(item)}
+                title="Inhabilitar usuario (Soft delete)"
+                className="inline-flex items-center gap-1 px-2 py-1.5 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Inhabilitar</span>
+              </button>
+            )}
+          </div>
+        )}
         loading={loading}
         emptyText="No se encontraron usuarios registrados."
         keyExtractor={(item) => item.idUsuario}
@@ -437,6 +512,54 @@ export const UsuariosPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Selector de Estado / Habilitación */}
+          <div className="pt-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+              Estado de Cuenta / Habilitación en el Sistema
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, estadoRegistro: 1 })}
+                className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between cursor-pointer ${
+                  formData.estadoRegistro === 1
+                    ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-500/20 text-emerald-900"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                <div>
+                  <span className="font-bold text-xs block">Usuario Habilitado</span>
+                  <span className="text-[10px] text-emerald-700">Acceso activo al sistema</span>
+                </div>
+                {formData.estadoRegistro === 1 ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                ) : (
+                  <span className="w-4 h-4 rounded-full border border-slate-300" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, estadoRegistro: 0 })}
+                className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between cursor-pointer ${
+                  formData.estadoRegistro === 0
+                    ? "bg-rose-50 border-rose-400 ring-2 ring-rose-500/20 text-rose-900"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                <div>
+                  <span className="font-bold text-xs block">Usuario Inhabilitado</span>
+                  <span className="text-[10px] text-rose-700">Acceso bloqueado / inactivo</span>
+                </div>
+                {formData.estadoRegistro === 0 ? (
+                  <CheckCircle2 className="w-5 h-5 text-rose-600" />
+                ) : (
+                  <span className="w-4 h-4 rounded-full border border-slate-300" />
+                )}
+              </button>
+            </div>
+          </div>
+
           {editingUser && (
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] text-slate-500 grid grid-cols-2 gap-2">
               <div>
@@ -444,8 +567,8 @@ export const UsuariosPage: React.FC = () => {
               </div>
               <div>
                 <span className="font-semibold text-slate-700">Estado Registro:</span>{" "}
-                <span className={editingUser.estadoRegistro === 1 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>
-                  {editingUser.estadoRegistro === 1 ? "Activo (1)" : "Inactivo (0)"}
+                <span className={formData.estadoRegistro === 1 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold"}>
+                  {formData.estadoRegistro === 1 ? "Habilitado (1)" : "Inhabilitado (0)"}
                 </span>
               </div>
               {editingUser.fechaCreacion && (
