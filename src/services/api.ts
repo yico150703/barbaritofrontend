@@ -1,25 +1,23 @@
 import axios from "axios";
 
 const getBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && envUrl.trim() !== "" && !envUrl.includes("tu-backend")) {
+  if (typeof window !== "undefined") {
+    // Si estamos en Vercel, usar el proxy relativo /api para máxima compatibilidad con modo incógnito y evitar bloqueos CORS
+    if (window.location.hostname.endsWith("vercel.app")) {
+      return "/api";
+    }
+    // Si estamos en cualquier otro host remoto HTTPS
     if (
-      typeof window !== "undefined" &&
-      window.location.protocol === "https:" &&
-      envUrl.includes("http://localhost")
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1"
     ) {
       return "https://barbaritosql.onrender.com/api";
     }
-    return envUrl;
   }
 
-  // Si estamos en el navegador en Vercel o cualquier dominio remoto HTTPS
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname !== "localhost" &&
-    window.location.hostname !== "127.0.0.1"
-  ) {
-    return "https://barbaritosql.onrender.com/api";
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== "" && !envUrl.includes("tu-backend")) {
+    return envUrl;
   }
 
   // Desarrollo local en localhost
