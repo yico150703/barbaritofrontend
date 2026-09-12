@@ -47,7 +47,7 @@ const getIconForOption = (nombre: string): LucideIcon => {
 };
 
 export const Sidebar: React.FC = () => {
-  const { menuTree, sidebarCollapsed, toggleSidebar, perfilActivo, panelActivo, seleccionarPanel, modoTresRequerimientos } = useAuth();
+  const { menuTree, sidebarCollapsed, toggleSidebar, perfilActivo, panelActivo, seleccionarPanel } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -81,7 +81,6 @@ export const Sidebar: React.FC = () => {
   };
 
   const getPanelTitle = () => {
-    if (modoTresRequerimientos) return "Seguridad & RBAC";
     if (!panelActivo) return "Dashboard Inicial";
     if (panelActivo === "tecnico") return "Panel Técnico";
     if (panelActivo === "gerencial") return "Panel Administrador";
@@ -169,8 +168,8 @@ export const Sidebar: React.FC = () => {
           ))
         )}
 
-        {/* Mensaje de ayuda si está en el Dashboard Inicial (solo fuera de modoTresRequerimientos) */}
-        {!modoTresRequerimientos && !panelActivo && !sidebarCollapsed && (
+        {/* Mensaje de ayuda si está en el Dashboard Inicial */}
+        {!panelActivo && !sidebarCollapsed && (
           <div className="mt-4 p-3 rounded-xl bg-[#063D2A]/30 border border-[#063D2A]/60 text-center">
             <p className="text-[11px] text-slate-300 font-medium">
               💡 Selecciona un panel en el inicio para desplegar sus menús.

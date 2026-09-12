@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { LogOut, Menu, Wrench, Shield, Users, ChevronDown, CheckCircle2 } from "lucide-react";
 
 export const Topbar: React.FC = () => {
-  const { usuario, perfilActivo, panelActivo, logout, toggleSidebar, modoTresRequerimientos } = useAuth();
+  const { usuario, perfilActivo, panelActivo, logout, toggleSidebar } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,19 +63,14 @@ export const Topbar: React.FC = () => {
 
         <div className="flex items-center gap-2.5">
           <h1 className="text-sm font-semibold text-slate-600 leading-tight">
-            {modoTresRequerimientos ? "Control de Seguridad RBAC & Menús" : "Sistema de gestión e inventario"}
+            Sistema de gestión e inventario
           </h1>
-          {modoTresRequerimientos ? (
-            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border text-[#063D2A] bg-[#28D978]/20 border-[#28D978]/40">
-              <Shield className="w-3 h-3 text-[#28D978]" />
-              <span>3 Requerimientos (ERD)</span>
-            </span>
-          ) : panelActivo ? (
+          {panelActivo && (
             <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${roleInfo.color}`}>
               <RoleIcon className="w-3 h-3" />
               <span>{roleInfo.label}</span>
             </span>
-          ) : null}
+          )}
         </div>
       </div>
 

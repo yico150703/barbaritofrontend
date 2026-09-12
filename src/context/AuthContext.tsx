@@ -12,49 +12,6 @@ export const OPCION_INICIO: OpcionMenu = {
   hijos: [],
 };
 
-// Flag temporal: limita la interfaz a los 3 requerimientos del diagrama ER.
-// Para restaurar todos los módulos de almacén e inventario, cambiar a false.
-export const MODO_TRES_REQUERIMIENTOS = true;
-
-export const OPCIONES_TRES_REQUERIMIENTOS: OpcionMenu[] = [
-  {
-    idOpcionMenu: 1,
-    nombre: "Inicio",
-    urlMenu: "/home",
-    descripcion: "Dashboard de Control de Seguridad y Menús",
-    idPadre: null,
-    orden: 1,
-    hijos: [],
-  },
-  {
-    idOpcionMenu: 2,
-    nombre: "Mantenimiento de Perfiles",
-    urlMenu: "/home/perfiles",
-    descripcion: "Mantenimiento de la tabla Perfil",
-    idPadre: null,
-    orden: 2,
-    hijos: [],
-  },
-  {
-    idOpcionMenu: 3,
-    nombre: "Mantenimiento de Usuarios",
-    urlMenu: "/home/usuarios",
-    descripcion: "Mantenimiento de Usuario relacionado con Perfil",
-    idPadre: null,
-    orden: 3,
-    hijos: [],
-  },
-  {
-    idOpcionMenu: 4,
-    nombre: "Mantenimiento de Opciones de Menú",
-    urlMenu: "/home/opciones-menu",
-    descripcion: "Mantenimiento de la tabla OpcionesMenu",
-    idPadre: null,
-    orden: 4,
-    hijos: [],
-  },
-];
-
 interface AuthContextType {
   usuario: Usuario | null;
   token: string | null;
@@ -64,7 +21,6 @@ interface AuthContextType {
   menuTree: OpcionMenu[];
   sidebarCollapsed: boolean;
   loading: boolean;
-  modoTresRequerimientos: boolean;
   login: (correo: string, clave: string) => Promise<{ multiRol: boolean; perfiles?: Perfil[] }>;
   seleccionarPerfil: (perfil: Perfil) => Promise<void>;
   seleccionarPanel: (panel: TipoPanel) => Promise<void>;
@@ -96,9 +52,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [panelActivo, setPanelActivo] = useState<TipoPanel>(() => {
-    if (MODO_TRES_REQUERIMIENTOS) {
-      return null;
-    }
     const raw = localStorage.getItem("almacen_active_panel");
     if (raw === "tecnico" || raw === "gerencial" || raw === "miembro-equipo") {
       return raw as TipoPanel;
@@ -107,9 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
-  const [menuTree, setMenuTree] = useState<OpcionMenu[]>(
-    MODO_TRES_REQUERIMIENTOS ? OPCIONES_TRES_REQUERIMIENTOS : [OPCION_INICIO]
-  );
+  const [menuTree, setMenuTree] = useState<OpcionMenu[]>([OPCION_INICIO]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Mapear un panel al ID de perfil en backend (1=Técnico, 2=Gerente/Admin, 3=Miembro de equipo)
@@ -128,11 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Función para cargar el menú del panel activo desde el Backend
   const cargarMenuPorPanel = async (panel: TipoPanel, idUsuario: number) => {
-    if (MODO_TRES_REQUERIMIENTOS) {
-      setMenuTree(OPCIONES_TRES_REQUERIMIENTOS);
-      return;
-    }
-
     if (!panel) {
       // Estado Inicial: El menú tiene ÚNICAMENTE la opción "Inicio"
       setMenuTree([OPCION_INICIO]);
@@ -207,14 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const inicializar = async () => {
       if (usuario && token) {
-        if (MODO_TRES_REQUERIMIENTOS) {
-          setPanelActivo(null);
-          localStorage.removeItem("almacen_active_panel");
-          setMenuTree(OPCIONES_TRES_REQUERIMIENTOS);
-          setLoading(false);
-          return;
-        }
-
         const path = window.location.pathname.toLowerCase();
 
         let panelDetectado: TipoPanel = null;
@@ -267,7 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.setItem("almacen_perfil_activo", JSON.stringify(perfiles[0]));
             localStorage.setItem("almacen_active_profile_id", String(perfiles[0].idPerfil));
           }
-          setMenuTree(MODO_TRES_REQUERIMIENTOS ? OPCIONES_TRES_REQUERIMIENTOS : [OPCION_INICIO]);
+          setMenuTree([OPCION_INICIO]);
         }
       }
       setLoading(false);
@@ -303,8 +241,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Regla de Negocio: Ningún rol tiene pantalla multi-rol previa.
+    // Todos van directo al dashboard inicial con panelActivo = null y solo "Inicio" en el menú.
     setPanelActivo(null);
-    setMenuTree(MODO_TRES_REQUERIMIENTOS ? OPCIONES_TRES_REQUERIMIENTOS : [OPCION_INICIO]);
+    setMenuTree([OPCION_INICIO]);
 
     return { multiRol: false };
   };
@@ -323,11 +262,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const seleccionarPanel = async (panel: TipoPanel) => {
     setPanelActivo(panel);
-    if (MODO_TRES_REQUERIMIENTOS) {
-      setMenuTree(OPCIONES_TRES_REQUERIMIENTOS);
-      return;
-    }
-
     if (!panel) {
       localStorage.removeItem("almacen_active_panel");
       if (perfiles && perfiles.length > 0) {
@@ -368,11 +302,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const recargarMenu = async () => {
-    if (MODO_TRES_REQUERIMIENTOS) {
-      setMenuTree(OPCIONES_TRES_REQUERIMIENTOS);
-      return;
-    }
-
     if (usuario && panelActivo) {
       await cargarMenuPorPanel(panelActivo, usuario.idUsuario);
     } else {
@@ -397,7 +326,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPerfiles([]);
     setPerfilActivo(null);
     setPanelActivo(null);
-    setMenuTree(MODO_TRES_REQUERIMIENTOS ? OPCIONES_TRES_REQUERIMIENTOS : [OPCION_INICIO]);
+    setMenuTree([OPCION_INICIO]);
     setSidebarCollapsed(false);
   };
 
@@ -412,7 +341,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         menuTree,
         sidebarCollapsed,
         loading,
-        modoTresRequerimientos: MODO_TRES_REQUERIMIENTOS,
         login,
         seleccionarPerfil,
         seleccionarPanel,

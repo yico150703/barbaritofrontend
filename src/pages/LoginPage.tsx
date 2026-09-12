@@ -140,13 +140,13 @@ export const LoginPage: React.FC = () => {
             BARBARIAN
           </h1>
 
-          {/* Subtítulo: Sistema de Control de Acceso y Menús */}
+          {/* Subtítulo: Sistema de Gestión de Inventario */}
           <p className="text-xs sm:text-sm font-bold text-[#28D978] tracking-[0.28em] uppercase mt-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-            Seguridad y Control de Acceso RBAC
+            Sistema de Gestión de Inventario
           </p>
 
           <p className="text-xs text-slate-300/80 max-w-md mt-4 leading-relaxed hidden sm:block">
-            Mantenimiento de Perfiles, Usuarios con asignación de roles y estructura jerárquica de Opciones de Menú (3 Requerimientos ER).
+            Control de existencias en tiempo real, kardex de entradas y salidas, solicitudes de compra y auditoría de inventario físico.
           </p>
         </div>
 
@@ -158,7 +158,7 @@ export const LoginPage: React.FC = () => {
             <span className="w-2 h-2 rounded-full bg-[#28D978]/20" />
           </div>
           <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-            Seguridad RBAC &bull; Requerimientos 1, 2 y 3
+            Cervecería Barbarian &bull; Almacén Central
           </span>
         </div>
       </div>
@@ -182,7 +182,7 @@ export const LoginPage: React.FC = () => {
             </h2>
             <div className="w-12 h-1 bg-[#28D978] rounded-full mx-auto my-2.5" />
             <p className="text-xs text-slate-500 font-medium">
-              Acceso a Mantenimiento de Perfiles, Usuarios y Menús (RBAC)
+              Ingresa tus credenciales para acceder al sistema.
             </p>
           </div>
 

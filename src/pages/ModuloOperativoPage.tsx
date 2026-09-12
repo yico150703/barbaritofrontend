@@ -165,91 +165,18 @@ export const ModuloOperativoPage: React.FC = () => {
   });
   const [ultimoInventarioPDF, setUltimoInventarioPDF] = useState<any | null>(null);
 
-  // Cargar datos según la sección
+  // Cargar datos según la sección (Módulos de almacén se mantienen vacíos para cumplir únicamente los 3 requerimientos del ER)
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      if (
-        path.includes("items") ||
-        path.includes("stock") ||
-        path.includes("movimientos") ||
-        path.includes("solicitudes") ||
-        path.includes("inventario") ||
-        path.includes("reportes")
-      ) {
-        const res = await api.get("/items");
-        if (res.data.success) setItems(res.data.items || []);
-      }
-      if (path.includes("stock") || path.includes("reportes")) {
-        const res = await api.get("/stock");
-        if (res.data.success) setStockList(res.data.stock || []);
-      }
-      if (path.includes("movimientos") || path.includes("reportes")) {
-        const res = await api.get("/movimientos");
-        if (res.data.success) {
-          const rawMovs = res.data.movimientos || [];
-          setMovimientos(rawMovs);
-          if (rawMovs.length > 0 && !selectedMovId) {
-            const primerMov = esMiembroEquipo
-              ? rawMovs.find((x: any) => Number(x.usuarioRegistro) === Number(currentUserId))
-              : rawMovs[0];
-            if (primerMov) {
-              setSelectedMovId(String(primerMov.idMovimiento));
-              setFormEditMov({
-                motivoMovimiento: primerMov.motivoMovimiento || "",
-                localRelacionado: primerMov.localRelacionado || "",
-                fechaMovimiento: primerMov.fechaMovimiento || "",
-                observacion: primerMov.observacion || "",
-              });
-            }
-          }
-        }
-      }
-      if (path.includes("solicitudes") || path.includes("ordenes-compra") || path.includes("reportes")) {
-        const res = await api.get("/solicitudes");
-        if (res.data.success) {
-          const list = res.data.solicitudes || [];
-          setSolicitudes(list);
-          if (list.length > 0) {
-            if (!detalleSolicitudId) setDetalleSolicitudId(String(list[0].idOrdenCompra));
-            if (!detalleOrdenId) setDetalleOrdenId(String(list[0].idOrdenCompra));
-            if (!selectedSolicitudId) {
-              setSelectedSolicitudId(String(list[0].idOrdenCompra));
-              setFormEditSolicitud({
-                estadoOrdenCompra: list[0].estadoOrdenCompra || "PENDIENTE",
-                cantidad: list[0].detalles?.[0]?.cantidadSolicitada || "10",
-                observacion: "",
-              });
-            }
-          }
-        }
-      }
-      if (path.includes("miembros-equipo")) {
-        const res = await api.get("/miembros-equipo");
-        if (res.data.success) {
-          const list = res.data.miembros || [];
-          setMiembros(list);
-          if (list.length > 0 && !selectedMiembroId) {
-            const m = list[0];
-            setSelectedMiembroId(String(m.idUsuario));
-            setFormEditMiembro({
-              dni: m.dni || "",
-              nombres: m.nombres || "",
-              apellidoPaterno: m.apellidoPaterno || "",
-              apellidoMaterno: m.apellidoMaterno || "",
-              celular: m.celular || "",
-              correoElectronico: m.correoElectronico || "",
-              estadoRegistro: m.estadoRegistro ?? 1,
-            });
-          }
-        }
-      }
-      if (path.includes("actividades")) {
-        const res = await api.get("/actividades");
-        if (res.data.success) setActividades(res.data.actividades || []);
-      }
+      setItems([]);
+      setStockList([]);
+      setMovimientos([]);
+      setSolicitudes([]);
+      setMiembros([]);
+      setActividades([]);
     } catch (err) {
-      console.error("Error al cargar datos operativos:", err);
+      console.error("Error al cargar datos:", err);
     } finally {
       setLoading(false);
     }
