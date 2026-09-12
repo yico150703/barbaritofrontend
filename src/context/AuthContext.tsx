@@ -12,6 +12,63 @@ export const OPCION_INICIO: OpcionMenu = {
   hijos: [],
 };
 
+export const MENU_TECNICO_TREE: OpcionMenu[] = [
+  OPCION_INICIO,
+  {
+    idOpcionMenu: 10,
+    nombre: "Panel Técnico",
+    urlMenu: "/home/panel-tecnico",
+    idPadre: null,
+    orden: 2,
+    hijos: [
+      {
+        idOpcionMenu: 11,
+        nombre: "Mantenimiento de Perfiles",
+        urlMenu: "/home/perfiles",
+        idPadre: 10,
+        orden: 1,
+      },
+      {
+        idOpcionMenu: 12,
+        nombre: "Mantenimiento de Opciones de Menú",
+        urlMenu: "/home/opciones-menu",
+        idPadre: 10,
+        orden: 2,
+      },
+      {
+        idOpcionMenu: 13,
+        nombre: "Gestión de Usuarios",
+        urlMenu: "/home/usuarios",
+        idPadre: 10,
+        orden: 3,
+        hijos: [
+          {
+            idOpcionMenu: 14,
+            nombre: "Editar Usuario",
+            urlMenu: "/home/usuarios/editar",
+            idPadre: 13,
+            orden: 1,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    idOpcionMenu: 20,
+    nombre: "Panel Gerencial",
+    urlMenu: "/home/panel-gerencial",
+    idPadre: null,
+    orden: 3,
+  },
+  {
+    idOpcionMenu: 30,
+    nombre: "Panel Miembro de Equipo",
+    urlMenu: "/home/panel-miembro-equipo",
+    idPadre: null,
+    orden: 4,
+  },
+];
+
 interface AuthContextType {
   usuario: Usuario | null;
   token: string | null;
@@ -60,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
-  const [menuTree, setMenuTree] = useState<OpcionMenu[]>([OPCION_INICIO]);
+  const [menuTree, setMenuTree] = useState<OpcionMenu[]>(MENU_TECNICO_TREE);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Mapear un panel al ID de perfil en backend (1=Técnico, 2=Gerente/Admin, 3=Miembro de equipo)
@@ -79,9 +136,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Función para cargar el menú del panel activo desde el Backend
   const cargarMenuPorPanel = async (panel: TipoPanel, idUsuario: number) => {
-    if (!panel) {
-      // Estado Inicial: El menú tiene ÚNICAMENTE la opción "Inicio"
-      setMenuTree([OPCION_INICIO]);
+    const esTecnico = perfiles.some(
+      (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
+    );
+    if (esTecnico || !panel || panel === "tecnico") {
+      setMenuTree(MENU_TECNICO_TREE);
       return;
     }
 
@@ -92,23 +151,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (resp.data && resp.data.success) {
         const rawMenu: OpcionMenu[] = resp.data.menu || [];
 
-        // Para el panel técnico, si los submódulos están dentro del nodo 'Panel técnico', los extraemos limpiamente
-        let modulosPanel: OpcionMenu[] = [];
-
-        if (panel === "tecnico") {
-          // Extraer submenús de técnico (Perfiles, Opciones de Menú)
-          const nodoTecnico = rawMenu.find(
-            (m) => m.nombre.toLowerCase().includes("técnico") || m.nombre.toLowerCase().includes("tecnico")
-          );
-          if (nodoTecnico && nodoTecnico.hijos && nodoTecnico.hijos.length > 0) {
-            modulosPanel = nodoTecnico.hijos;
-          } else {
-            modulosPanel = rawMenu.filter((m) => m.idOpcionMenu !== 1 && m.urlMenu !== "/home" && m.urlMenu !== "/dashboard");
-          }
-        } else {
-          // Para Gerencial y Miembro de Equipo: excluimos el nodo de Inicio que viene de la BD
-          modulosPanel = rawMenu.filter((m) => m.idOpcionMenu !== 1 && m.urlMenu !== "/home" && m.urlMenu !== "/dashboard");
-        }
+        // Para Gerencial y Miembro de Equipo: excluimos el nodo de Inicio que viene de la BD
+        const modulosPanel: OpcionMenu[] = rawMenu.filter(
+          (m) => m.idOpcionMenu !== 1 && m.urlMenu !== "/home" && m.urlMenu !== "/dashboard"
+        );
 
         // Asegurar que para miembro de equipo "Entradas y salidas" contenga tanto Registrar como Editar movimiento
         if (panel === "miembro-equipo") {
@@ -158,11 +204,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let panelDetectado: TipoPanel = null;
         if (path === "/home" || path === "/dashboard" || path === "/") {
           panelDetectado = null;
-        } else if (path.includes("panel-tecnico") || path.includes("perfiles") || path.includes("opciones-menu")) {
+        } else if (
+          path.includes("panel-tecnico") ||
+          path.includes("perfiles") ||
+          path.includes("opciones-menu") ||
+          path.includes("usuarios")
+        ) {
           panelDetectado = "tecnico";
         } else if (
           path.includes("panel-gerencial") ||
-          path.includes("usuarios") ||
           path.includes("items") ||
           path.includes("miembros-equipo") ||
           path.includes("reportes") ||
@@ -187,12 +237,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         setPanelActivo(panelDetectado);
-        if (panelDetectado) {
+        const esTecnico = perfiles.some(
+          (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
+        );
+        if (!panelDetectado || panelDetectado === "tecnico" || esTecnico) {
+          setMenuTree(MENU_TECNICO_TREE);
+        } else {
           localStorage.setItem("almacen_active_panel", panelDetectado);
           await cargarMenuPorPanel(panelDetectado, usuario.idUsuario);
-        } else {
-          localStorage.removeItem("almacen_active_panel");
-          setMenuTree([OPCION_INICIO]);
         }
       }
       setLoading(false);
@@ -227,10 +279,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem("almacen_active_profile_id", String(perfilPrincipal.idPerfil));
     }
 
-    // Regla de Negocio: Ningún rol tiene pantalla multi-rol previa.
-    // Todos van directo al dashboard inicial con panelActivo = null y solo "Inicio" en el menú.
     setPanelActivo(null);
-    setMenuTree([OPCION_INICIO]);
+    setMenuTree(MENU_TECNICO_TREE);
 
     return { multiRol: false };
   };
@@ -249,26 +299,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const seleccionarPanel = async (panel: TipoPanel) => {
     setPanelActivo(panel);
-    if (!panel) {
-      localStorage.removeItem("almacen_active_panel");
-      setMenuTree([OPCION_INICIO]);
+    const esTecnico = perfiles.some(
+      (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
+    );
+    if (!panel || panel === "tecnico" || esTecnico) {
+      if (panel) {
+        localStorage.setItem("almacen_active_panel", panel);
+      } else {
+        localStorage.removeItem("almacen_active_panel");
+      }
+      setMenuTree(MENU_TECNICO_TREE);
       return;
     }
 
     localStorage.setItem("almacen_active_panel", panel);
 
-    // El rol real del usuario en la BD (perfilActivo) se mantiene intacto para evitar confusiones de rol.
-    // Solo se cargan los menús autorizados correspondientes a dicho panel.
     if (usuario) {
       await cargarMenuPorPanel(panel, usuario.idUsuario);
     }
   };
 
   const recargarMenu = async () => {
-    if (usuario && panelActivo) {
+    const esTecnico = perfiles.some(
+      (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
+    );
+    if (esTecnico) {
+      setMenuTree(MENU_TECNICO_TREE);
+      return;
+    }
+    if (usuario && panelActivo && panelActivo !== "tecnico") {
       await cargarMenuPorPanel(panelActivo, usuario.idUsuario);
     } else {
-      setMenuTree([OPCION_INICIO]);
+      setMenuTree(MENU_TECNICO_TREE);
     }
   };
 

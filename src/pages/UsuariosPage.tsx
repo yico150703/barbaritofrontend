@@ -291,17 +291,6 @@ export const UsuariosPage: React.FC = () => {
         </div>
       )}
 
-      {/* Banner Informativo si se ingresó a la ruta /editar */}
-      {location.pathname.includes("editar") && (
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm font-medium flex items-center gap-3 shadow-xs">
-          <Edit3 className="w-5 h-5 text-amber-600 shrink-0" />
-          <div>
-            <span className="font-bold block text-amber-950">Modo Edición y Habilitación de Usuarios</span>
-            <span>Usa los botones de acción para editar datos personales o rehabilitar cuentas que se encuentren inactivas.</span>
-          </div>
-        </div>
-      )}
-
       {/* Encabezado Principal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>

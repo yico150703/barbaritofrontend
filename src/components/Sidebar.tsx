@@ -20,6 +20,8 @@ import {
   ListTree,
   Wrench,
   BarChart3,
+  Warehouse,
+  Edit3,
   FileText,
   LucideIcon,
   ArrowLeft,
@@ -31,9 +33,10 @@ const getIconForOption = (nombre: string): LucideIcon => {
   if (n === "home" || n === "inicio") return Home;
   if (n.includes("técnico") || n.includes("tecnico")) return Wrench;
   if (n.includes("perfil")) return Shield;
-  if (n.includes("opciones") || n.includes("menú")) return ListTree;
-  if (n.includes("gerencial")) return BarChart3;
-  if (n.includes("miembro de equipo") || n.includes("me (miembro")) return Users;
+  if (n.includes("opciones") || n.includes("menú") || n.includes("menu")) return ListTree;
+  if (n.includes("gerencial") || n.includes("admin")) return Warehouse;
+  if (n.includes("miembro de equipo") || n.includes("me (miembro") || n.includes("operativ")) return Boxes;
+  if (n.includes("editar usuario") || n.includes("editar")) return Edit3;
   if (n.includes("usuario")) return Users;
   if (n.includes("actividad")) return Activity;
   if (n.includes("stock")) return Boxes;
@@ -51,8 +54,10 @@ export const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Acordeones abiertos
-  const [openAccordions, setOpenAccordions] = useState<Record<number, boolean>>({});
+  // Acordeones abiertos (Panel Técnico abierto por defecto)
+  const [openAccordions, setOpenAccordions] = useState<Record<number, boolean>>({
+    10: true,
+  });
 
   const toggleAccordion = (id: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -77,7 +82,21 @@ export const Sidebar: React.FC = () => {
     if (item.idOpcionMenu === 1 || item.urlMenu === "/home" || item.urlMenu === "/dashboard") {
       await seleccionarPanel(null);
       navigate("/home");
+      return;
     }
+    if (
+      item.urlMenu.includes("panel-tecnico") ||
+      item.urlMenu.includes("perfiles") ||
+      item.urlMenu.includes("opciones-menu") ||
+      item.urlMenu.includes("usuarios")
+    ) {
+      await seleccionarPanel("tecnico");
+    } else if (item.urlMenu.includes("panel-gerencial")) {
+      await seleccionarPanel("gerencial");
+    } else if (item.urlMenu.includes("panel-miembro-equipo")) {
+      await seleccionarPanel("miembro-equipo");
+    }
+    navigate(item.urlMenu);
   };
 
   const getPanelTitle = () => {
@@ -130,24 +149,6 @@ export const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      {/* Indicador de estado del panel activo */}
-      {panelActivo && !sidebarCollapsed && (
-        <div className="px-3 pt-3 pb-1">
-          <button
-            onClick={() => handleItemClick({ idOpcionMenu: 1, nombre: "Inicio", urlMenu: "/home", idPadre: null })}
-            className="w-full px-3 py-2 rounded-xl bg-[#063D2A]/70 hover:bg-[#063D2A] border border-[#28D978]/30 hover:border-[#28D978]/60 text-slate-200 hover:text-white text-xs font-semibold transition-all flex items-center justify-between group shadow-xs cursor-pointer"
-          >
-            <span className="flex items-center gap-2">
-              <ArrowLeft className="w-3.5 h-3.5 text-[#28D978] group-hover:-translate-x-0.5 transition-transform" />
-              <span>Volver al Inicio</span>
-            </span>
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#022A1E] text-[#28D978] border border-[#28D978]/20">
-              Paneles
-            </span>
-          </button>
-        </div>
-      )}
-
       {/* Lista del Menú Dinámico */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1.5">
         {menuTree.length === 0 ? (
@@ -161,20 +162,12 @@ export const Sidebar: React.FC = () => {
               item={item}
               sidebarCollapsed={sidebarCollapsed}
               isRouteActive={isRouteActive}
-              isOpen={Boolean(openAccordions[item.idOpcionMenu])}
-              onToggle={(e) => toggleAccordion(item.idOpcionMenu, e)}
-              onItemClick={() => handleItemClick(item)}
+              openAccordions={openAccordions}
+              toggleAccordion={toggleAccordion}
+              onItemClick={handleItemClick}
+              level={0}
             />
           ))
-        )}
-
-        {/* Mensaje de ayuda si está en el Dashboard Inicial */}
-        {!panelActivo && !sidebarCollapsed && (
-          <div className="mt-4 p-3 rounded-xl bg-[#063D2A]/30 border border-[#063D2A]/60 text-center">
-            <p className="text-[11px] text-slate-300 font-medium">
-              💡 Selecciona un panel en el inicio para desplegar sus menús.
-            </p>
-          </div>
         )}
       </nav>
 
@@ -200,9 +193,9 @@ interface SidebarItemProps {
   item: OpcionMenu;
   sidebarCollapsed: boolean;
   isRouteActive: (url: string) => boolean;
-  isOpen: boolean;
-  onToggle: (e: React.MouseEvent) => void;
-  onItemClick: () => void;
+  openAccordions: Record<number, boolean>;
+  toggleAccordion: (id: number, e: React.MouseEvent) => void;
+  onItemClick: (item: OpcionMenu) => void;
   level?: number;
 }
 
@@ -210,19 +203,33 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   item,
   sidebarCollapsed,
   isRouteActive,
-  isOpen,
-  onToggle,
+  openAccordions,
+  toggleAccordion,
   onItemClick,
+  level = 0,
 }) => {
   const Icon = getIconForOption(item.nombre);
-  const hasChildren = item.hijos && item.hijos.length > 0;
+  const hasChildren = Boolean(item.hijos && item.hijos.length > 0);
   const active = isRouteActive(item.urlMenu);
 
-  const isAnyChildActive = hasChildren && item.hijos?.some((h) => isRouteActive(h.urlMenu));
-  const expanded = isOpen || isAnyChildActive;
+  // Comprobar si algún descendiente está activo
+  const checkChildActive = (node: OpcionMenu): boolean => {
+    if (isRouteActive(node.urlMenu)) return true;
+    if (node.hijos && node.hijos.length > 0) {
+      return node.hijos.some(checkChildActive);
+    }
+    return false;
+  };
 
-  const handleClick = () => {
-    onItemClick();
+  const isAnyChildActive = hasChildren && item.hijos!.some(checkChildActive);
+  const isExplicitlyToggled = openAccordions[item.idOpcionMenu] !== undefined;
+  const expanded = isExplicitlyToggled ? openAccordions[item.idOpcionMenu] : isAnyChildActive;
+
+  const handleRowClick = (e: React.MouseEvent) => {
+    if (hasChildren) {
+      toggleAccordion(item.idOpcionMenu, e);
+    }
+    onItemClick(item);
   };
 
   return (
@@ -233,21 +240,21 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           active
             ? "bg-[#063D2A] text-white font-bold border border-[#28D978]/50 shadow-md shadow-[#063D2A]/60"
             : "text-slate-300 hover:bg-[#063D2A]/60 hover:text-white"
-        } ${sidebarCollapsed ? "p-2.5 justify-center" : "px-3 py-2.5"}`}
+        } ${sidebarCollapsed ? "p-2.5 justify-center" : level > 0 ? "px-2.5 py-2" : "px-3 py-2.5"}`}
       >
         <Link
           to={item.urlMenu}
-          onClick={handleClick}
-          className="flex items-center gap-3 flex-1 truncate min-w-0"
+          onClick={handleRowClick}
+          className="flex items-center gap-3 flex-1 truncate min-w-0 cursor-pointer"
           title={sidebarCollapsed ? item.nombre : undefined}
         >
           <Icon
-            className={`w-5 h-5 shrink-0 transition-colors ${
+            className={`${level > 0 ? "w-4 h-4" : "w-5 h-5"} shrink-0 transition-colors ${
               active ? "text-[#28D978]" : "text-slate-400 group-hover:text-[#28D978]"
             }`}
           />
           {!sidebarCollapsed && (
-            <span className="truncate text-sm font-medium leading-none">
+            <span className={`truncate leading-none ${level > 0 ? "text-xs font-medium" : "text-sm font-medium"}`}>
               {item.nombre}
             </span>
           )}
@@ -256,7 +263,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         {/* Flecha de acordeón para opciones con hijos */}
         {hasChildren && !sidebarCollapsed && (
           <button
-            onClick={onToggle}
+            type="button"
+            onClick={(e) => toggleAccordion(item.idOpcionMenu, e)}
             className="p-1 text-slate-400 hover:text-white rounded-md transition-transform cursor-pointer"
             aria-label="Desplegar submenú"
           >
@@ -277,27 +285,21 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         )}
       </div>
 
-      {/* Submenús en Acordeón */}
+      {/* Submenús en Acordeón Recursivo */}
       {hasChildren && !sidebarCollapsed && expanded && (
-        <div className="ml-4 pl-3 my-1 border-l-2 border-[#063D2A] space-y-1">
-          {item.hijos?.map((subItem) => {
-            const subActive = isRouteActive(subItem.urlMenu);
-            const SubIcon = getIconForOption(subItem.nombre);
-            return (
-              <Link
-                key={subItem.idOpcionMenu}
-                to={subItem.urlMenu}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                  subActive
-                    ? "bg-[#063D2A] text-[#28D978] font-bold border border-[#28D978]/40 shadow-xs"
-                    : "text-slate-300 hover:bg-[#063D2A]/50 hover:text-white"
-                }`}
-              >
-                <SubIcon className={`w-3.5 h-3.5 shrink-0 ${subActive ? "text-[#28D978]" : "text-slate-400"}`} />
-                <span className="truncate">{subItem.nombre}</span>
-              </Link>
-            );
-          })}
+        <div className={`my-1 border-l-2 border-[#063D2A] space-y-1 ${level === 0 ? "ml-4 pl-3" : "ml-3 pl-2.5"}`}>
+          {item.hijos?.map((subItem) => (
+            <SidebarItem
+              key={subItem.idOpcionMenu}
+              item={subItem}
+              sidebarCollapsed={sidebarCollapsed}
+              isRouteActive={isRouteActive}
+              openAccordions={openAccordions}
+              toggleAccordion={toggleAccordion}
+              onItemClick={onItemClick}
+              level={level + 1}
+            />
+          ))}
         </div>
       )}
     </div>
