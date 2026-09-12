@@ -320,15 +320,7 @@ export const UsuariosPage: React.FC = () => {
         </div>
 
         <div>
-          {!isEditarPage ? (
-            <button
-              onClick={handleOpenNuevo}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold rounded-xl shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4 text-[#28D978]" />
-              <span>Nuevo Usuario</span>
-            </button>
-          ) : (
+          {isEditarPage && (
             /* Filtros rápidos en la página de edición para localizar usuarios fácilmente */
             <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold">
               <button

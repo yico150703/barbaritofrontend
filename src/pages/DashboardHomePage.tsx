@@ -19,11 +19,6 @@ export const DashboardHomePage: React.FC = () => {
   const { usuario, perfilActivo, perfiles, seleccionarPanel } = useAuth();
   const navigate = useNavigate();
 
-  // Asegurar que al estar en el Dashboard Inicial, el menú lateral contenga ÚNICAMENTE "Inicio"
-  useEffect(() => {
-    seleccionarPanel(null);
-  }, []);
-
   // Comprobar si el usuario tiene rol Técnico
   const esTecnico =
     perfilActivo?.idPerfil === 1 ||
@@ -38,6 +33,23 @@ export const DashboardHomePage: React.FC = () => {
   const esMiembro =
     perfilActivo?.idPerfil === 3 ||
     perfiles.some((p) => p.idPerfil === 3 || p.nombre.toLowerCase().includes("miembro"));
+
+  // Si no es técnico, redirigir inmediatamente a su dashboard autorizado sin mostrar los 3 paneles
+  useEffect(() => {
+    if (!esTecnico) {
+      if (esGerente) {
+        seleccionarPanel("gerencial");
+        navigate("/home/panel-gerencial", { replace: true });
+        return;
+      }
+      if (esMiembro) {
+        seleccionarPanel("miembro-equipo");
+        navigate("/home/panel-miembro-equipo", { replace: true });
+        return;
+      }
+    }
+    seleccionarPanel(null);
+  }, [esTecnico, esGerente, esMiembro]);
 
   const handleEntrarPanel = async (panel: TipoPanel, ruta: string) => {
     await seleccionarPanel(panel);

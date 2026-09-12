@@ -27,6 +27,15 @@ export const MENU_TECNICO_TREE: OpcionMenu[] = [
         urlMenu: "/home/perfiles",
         idPadre: 10,
         orden: 1,
+        hijos: [
+          {
+            idOpcionMenu: 111,
+            nombre: "Editar Perfiles",
+            urlMenu: "/home/perfiles/editar",
+            idPadre: 11,
+            orden: 1,
+          },
+        ],
       },
       {
         idOpcionMenu: 12,
@@ -34,6 +43,15 @@ export const MENU_TECNICO_TREE: OpcionMenu[] = [
         urlMenu: "/home/opciones-menu",
         idPadre: 10,
         orden: 2,
+        hijos: [
+          {
+            idOpcionMenu: 121,
+            nombre: "Editar Opciones de Menú",
+            urlMenu: "/home/opciones-menu/editar",
+            idPadre: 12,
+            orden: 1,
+          },
+        ],
       },
       {
         idOpcionMenu: 13,
@@ -78,7 +96,7 @@ interface AuthContextType {
   menuTree: OpcionMenu[];
   sidebarCollapsed: boolean;
   loading: boolean;
-  login: (correo: string, clave: string) => Promise<{ multiRol: boolean; perfiles?: Perfil[] }>;
+  login: (correo: string, clave: string) => Promise<{ multiRol: boolean; perfiles?: Perfil[]; rutaDestino: string }>;
   seleccionarPerfil: (perfil: Perfil) => Promise<void>;
   seleccionarPanel: (panel: TipoPanel) => Promise<void>;
   logout: () => void;
@@ -198,31 +216,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (usuario && token) {
         const path = window.location.pathname.toLowerCase();
 
+        const tieneTecnico = perfiles?.some(
+          (p: Perfil) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
+        );
+        const tieneGerente = perfiles?.some(
+          (p: Perfil) => p.idPerfil === 2 || p.nombre.toLowerCase().includes("gerente") || p.nombre.toLowerCase().includes("admin")
+        );
+        const tieneMiembro = perfiles?.some(
+          (p: Perfil) => p.idPerfil === 3 || p.nombre.toLowerCase().includes("miembro")
+        );
+
         let panelDetectado: TipoPanel = null;
-        if (path === "/home" || path === "/dashboard" || path === "/") {
-          panelDetectado = null;
-        } else if (
-          path.includes("panel-tecnico") ||
-          path.includes("perfiles") ||
-          path.includes("opciones-menu") ||
-          path.includes("usuarios")
-        ) {
-          panelDetectado = "tecnico";
-        } else if (
-          path.includes("panel-gerencial") ||
-          path.includes("items") ||
-          path.includes("miembros-equipo") ||
-          path.includes("reportes") ||
-          path.includes("ordenes-compra") ||
-          path.includes("actividades")
-        ) {
-          panelDetectado = "gerencial";
-        } else if (path.includes("panel-miembro-equipo")) {
-          panelDetectado = "miembro-equipo";
+
+        // Si el usuario NO es técnico, restringir directamente a su panel correspondiente
+        if (!tieneTecnico) {
+          if (tieneGerente) {
+            panelDetectado = "gerencial";
+          } else if (tieneMiembro) {
+            panelDetectado = "miembro-equipo";
+          }
         } else {
-          // Verificar si había un panel guardado en localStorage
-          const guardado = localStorage.getItem("almacen_active_panel") as TipoPanel;
-          panelDetectado = guardado || null;
+          if (path === "/home" || path === "/dashboard" || path === "/") {
+            panelDetectado = null;
+          } else if (
+            path.includes("panel-tecnico") ||
+            path.includes("perfiles") ||
+            path.includes("opciones-menu") ||
+            path.includes("usuarios")
+          ) {
+            panelDetectado = "tecnico";
+          } else if (
+            path.includes("panel-gerencial") ||
+            path.includes("items") ||
+            path.includes("miembros-equipo") ||
+            path.includes("reportes") ||
+            path.includes("ordenes-compra") ||
+            path.includes("actividades")
+          ) {
+            panelDetectado = "gerencial";
+          } else if (path.includes("panel-miembro-equipo")) {
+            panelDetectado = "miembro-equipo";
+          } else {
+            // Verificar si había un panel guardado en localStorage
+            const guardado = localStorage.getItem("almacen_active_panel") as TipoPanel;
+            panelDetectado = guardado || null;
+          }
         }
 
         // Mantener siempre el perfil REAL del usuario (de su cuenta en la BD)
@@ -273,10 +311,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem("almacen_active_profile_id", String(perfilPrincipal.idPerfil));
     }
 
-    setPanelActivo(null);
-    setMenuTree(MENU_TECNICO_TREE);
+    // Identificar roles para dirigir directamente al dashboard autorizado
+    const tieneTecnico = listaPerfiles?.some(
+      (p: Perfil) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
+    );
+    const tieneGerente = listaPerfiles?.some(
+      (p: Perfil) => p.idPerfil === 2 || p.nombre.toLowerCase().includes("gerente") || p.nombre.toLowerCase().includes("admin")
+    );
+    const tieneMiembro = listaPerfiles?.some(
+      (p: Perfil) => p.idPerfil === 3 || p.nombre.toLowerCase().includes("miembro")
+    );
 
-    return { multiRol: false };
+    let rutaDestino = "/home";
+
+    if (tieneTecnico) {
+      rutaDestino = "/home";
+      setPanelActivo(null);
+      setMenuTree(MENU_TECNICO_TREE);
+      localStorage.removeItem("almacen_active_panel");
+    } else if (tieneGerente) {
+      rutaDestino = "/home/panel-gerencial";
+      setPanelActivo("gerencial");
+      localStorage.setItem("almacen_active_panel", "gerencial");
+      await cargarMenuPorPanel("gerencial", nuevoUsuario.idUsuario);
+    } else if (tieneMiembro) {
+      rutaDestino = "/home/panel-miembro-equipo";
+      setPanelActivo("miembro-equipo");
+      localStorage.setItem("almacen_active_panel", "miembro-equipo");
+      await cargarMenuPorPanel("miembro-equipo", nuevoUsuario.idUsuario);
+    } else {
+      rutaDestino = "/home";
+      setPanelActivo(null);
+      setMenuTree(MENU_TECNICO_TREE);
+    }
+
+    return { multiRol: false, rutaDestino };
   };
 
   const seleccionarPerfil = async (

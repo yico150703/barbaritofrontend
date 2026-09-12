@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { api } from "../services/api";
 import { Perfil } from "../types";
 import { TablaGenerica, ColumnDef } from "../components/TablaGenerica";
@@ -7,6 +8,9 @@ import { FormField, FormActions } from "../components/FormularioGenerico";
 import { Shield, AlertTriangle } from "lucide-react";
 
 export const PerfilesPage: React.FC = () => {
+  const location = useLocation();
+  const isEditarPage = location.pathname.toLowerCase().includes("editar");
+
   const [perfiles, setPerfiles] = useState<Perfil[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -156,25 +160,17 @@ export const PerfilesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado Principal */}
+      {/* Encabezado Principal Diferenciado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
-            Mantenimiento de Perfiles (Roles)
+            {isEditarPage ? "Editar Perfiles" : "Mantenimiento de Perfiles (Roles)"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Configuración y mantenimiento de perfiles y roles del sistema (Tabla <code>Perfiles</code>).
+            {isEditarPage
+              ? "Actualización de nombres de perfiles, descripciones y control de estado de registro."
+              : "Consulta de roles y privilegios de acceso al sistema (Tabla Perfiles)."}
           </p>
-        </div>
-
-        <div>
-          <button
-            onClick={handleOpenNuevo}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold rounded-xl shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
-          >
-            <Shield className="w-4 h-4 text-[#28D978]" />
-            <span>Nuevo Perfil</span>
-          </button>
         </div>
       </div>
 
@@ -184,15 +180,19 @@ export const PerfilesPage: React.FC = () => {
         data={perfiles}
         searchQuery={search}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Buscar por nombre o descripción de rol..."
+        searchPlaceholder={
+          isEditarPage
+            ? "Buscar rol para editar..."
+            : "Buscar por nombre o descripción de rol..."
+        }
         page={page}
         totalPages={totalPages}
         totalRecords={totalRecords}
         onPageChange={(p) => setPage(p)}
-        onNuevo={handleOpenNuevo}
+        onNuevo={!isEditarPage ? handleOpenNuevo : undefined}
         nuevoLabel="Nuevo Perfil"
-        onEdit={handleOpenEdit}
-        onDelete={(p) => setDeletingPerfil(p)}
+        onEdit={isEditarPage ? handleOpenEdit : undefined}
+        onDelete={isEditarPage ? ((p) => setDeletingPerfil(p)) : undefined}
         loading={loading}
         emptyText="No se encontraron perfiles registrados."
         keyExtractor={(item) => item.idPerfil}

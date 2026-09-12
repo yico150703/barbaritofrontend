@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { api } from "../services/api";
 import { OpcionMenu } from "../types";
 import { TablaGenerica, ColumnDef } from "../components/TablaGenerica";
@@ -7,6 +8,9 @@ import { FormField, FormActions } from "../components/FormularioGenerico";
 import { ListTree, AlertTriangle, CornerDownRight } from "lucide-react";
 
 export const OpcionesMenuPage: React.FC = () => {
+  const location = useLocation();
+  const isEditarPage = location.pathname.toLowerCase().includes("editar");
+
   const [opciones, setOpciones] = useState<OpcionMenu[]>([]);
   const [opcionesPadre, setOpcionesPadre] = useState<OpcionMenu[]>([]);
   const [loading, setLoading] = useState(true);
@@ -223,25 +227,17 @@ export const OpcionesMenuPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado Principal */}
+      {/* Encabezado Principal Diferenciado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
-            Mantenimiento de Opciones de Menú
+            {isEditarPage ? "Editar Opciones de Menú" : "Mantenimiento de Opciones de Menú"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Estructuración jerárquica de menús (Tabla <code>OpcionesMenu</code>) y accesibilidad por rol (Tabla <code>OpcionesMenu_Perfiles</code>).
+            {isEditarPage
+              ? "Actualización de títulos de menú, rutas de navegación, orden y estructura jerárquica."
+              : "Estructuración jerárquica de menús (Tabla OpcionesMenu) y accesibilidad por rol."}
           </p>
-        </div>
-
-        <div>
-          <button
-            onClick={handleOpenNuevo}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold rounded-xl shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
-          >
-            <ListTree className="w-4 h-4 text-[#28D978]" />
-            <span>Nueva Opción</span>
-          </button>
         </div>
       </div>
 
@@ -251,15 +247,19 @@ export const OpcionesMenuPage: React.FC = () => {
         data={opciones}
         searchQuery={search}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Buscar por nombre, ruta o descripción..."
+        searchPlaceholder={
+          isEditarPage
+            ? "Buscar opción para editar..."
+            : "Buscar por nombre, ruta o descripción..."
+        }
         page={page}
         totalPages={totalPages}
         totalRecords={totalRecords}
         onPageChange={(p) => setPage(p)}
-        onNuevo={handleOpenNuevo}
+        onNuevo={!isEditarPage ? handleOpenNuevo : undefined}
         nuevoLabel="Nueva Opción"
-        onEdit={handleOpenEdit}
-        onDelete={(op) => setDeletingOpcion(op)}
+        onEdit={isEditarPage ? handleOpenEdit : undefined}
+        onDelete={isEditarPage ? ((op) => setDeletingOpcion(op)) : undefined}
         loading={loading}
         emptyText="No se encontraron opciones de menú registradas."
         keyExtractor={(item) => item.idOpcionMenu}

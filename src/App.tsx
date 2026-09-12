@@ -35,6 +35,7 @@ export default function App() {
 
               {/* Módulos y CRUDs del sistema */}
               <Route path="perfiles" element={<PerfilesPage />} />
+              <Route path="perfiles/*" element={<PerfilesPage />} />
               <Route path="usuarios" element={<UsuariosPage />} />
               <Route path="usuarios/*" element={<UsuariosPage />} />
               <Route path="opciones-menu" element={<OpcionesMenuPage />} />

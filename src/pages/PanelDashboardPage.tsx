@@ -82,8 +82,8 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
 
         {/* Módulos Principales del Panel Técnico */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* CRUD Perfiles */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* 1. Mantenimiento de Perfiles */}
             <Link
               to="/home/perfiles"
               className="p-6 rounded-2xl border border-sky-200/80 bg-gradient-to-b from-sky-50/40 to-white hover:border-sky-400 hover:shadow-md transition-all group flex flex-col justify-between"
@@ -96,16 +96,38 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                   Mantenimiento de Perfiles
                 </h4>
                 <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Gestión integral de los roles del sistema: crear roles, editar nombres, descripciones y estado de registro.
+                  Consulta del catálogo de roles del sistema y registro de nuevos perfiles de usuario.
                 </p>
               </div>
               <div className="pt-5 mt-4 border-t border-sky-100 flex items-center justify-between text-xs font-bold text-sky-600">
-                <span>Acceder al Módulo</span>
+                <span>Acceder a Perfiles</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
 
-            {/* CRUD Opciones de Menú */}
+            {/* 2. Editar Perfiles */}
+            <Link
+              to="/home/perfiles/editar"
+              className="p-6 rounded-2xl border border-sky-200/80 bg-gradient-to-b from-sky-50/40 to-white hover:border-sky-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center mb-4 shadow-md shadow-sky-600/20">
+                  <Edit3 className="w-6 h-6" />
+                </div>
+                <h4 className="text-base font-bold text-slate-900 group-hover:text-sky-700 transition-colors">
+                  Editar Perfiles
+                </h4>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Modificación de nombres de roles, descripciones y desactivación lógica de perfiles.
+                </p>
+              </div>
+              <div className="pt-5 mt-4 border-t border-sky-100 flex items-center justify-between text-xs font-bold text-sky-600">
+                <span>Editar Roles</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* 3. Mantenimiento de Opciones de Menú */}
             <Link
               to="/home/opciones-menu"
               className="p-6 rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white hover:border-indigo-400 hover:shadow-md transition-all group flex flex-col justify-between"
@@ -118,16 +140,38 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                   Mantenimiento de Opciones de Menú
                 </h4>
                 <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Gestión jerárquica de rutas, URLs del menú, asignación de padres y control de orden de visualización.
+                  Consulta de rutas y URLs del sistema con creación de nuevas opciones de navegación.
                 </p>
               </div>
               <div className="pt-5 mt-4 border-t border-indigo-100 flex items-center justify-between text-xs font-bold text-indigo-600">
-                <span>Acceder al Módulo</span>
+                <span>Acceder a Opciones</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
 
-            {/* Gestión de Usuarios */}
+            {/* 4. Editar Opciones de Menú */}
+            <Link
+              to="/home/opciones-menu/editar"
+              className="p-6 rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white hover:border-indigo-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-indigo-700 text-white flex items-center justify-center mb-4 shadow-md shadow-indigo-700/20">
+                  <Edit3 className="w-6 h-6" />
+                </div>
+                <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
+                  Editar Opciones de Menú
+                </h4>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Ajuste de URLs, orden de presentación, asignación de padres y control de estado de menús.
+                </p>
+              </div>
+              <div className="pt-5 mt-4 border-t border-indigo-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+                <span>Editar Opciones</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* 5. Gestión de Usuarios */}
             <Link
               to="/home/usuarios"
               className="p-6 rounded-2xl border border-slate-200/80 bg-gradient-to-b from-slate-50/40 to-white hover:border-slate-400 hover:shadow-md transition-all group flex flex-col justify-between"
@@ -140,16 +184,16 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                   Gestión de Usuarios
                 </h4>
                 <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Alta de usuarios, restablecimiento de contraseñas y asignación dinámica de perfiles en PostgreSQL.
+                  Directorio del personal institucional y alta de nuevos usuarios en el sistema.
                 </p>
               </div>
               <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700">
-                <span>Acceder al Módulo</span>
+                <span>Directorio Usuarios</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
 
-            {/* Habilitar y Editar Usuarios */}
+            {/* 6. Editar Usuario */}
             <Link
               to="/home/usuarios/editar"
               className="p-6 rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/40 to-white hover:border-emerald-400 hover:shadow-md transition-all group flex flex-col justify-between"
@@ -159,14 +203,14 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                   <UserCheck className="w-6 h-6" />
                 </div>
                 <h4 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                  Editar y Habilitar Usuarios
+                  Editar Usuario
                 </h4>
                 <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Actualización de datos personales, reactivación directa de usuarios inhabilitados y control de estados.
+                  Actualización de datos personales, contraseñas, roles y habilitación de cuentas inactivas.
                 </p>
               </div>
               <div className="pt-5 mt-4 border-t border-emerald-100 flex items-center justify-between text-xs font-bold text-emerald-700">
-                <span>Habilitar / Editar</span>
+                <span>Editar Cuentas</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
