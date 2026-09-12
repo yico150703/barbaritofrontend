@@ -226,13 +226,6 @@ export const OpcionesMenuPage: React.FC = () => {
       {/* Encabezado Principal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <ListTree className="w-4 h-4" />
-            <span>Módulo de Navegación &bull; Requerimiento 3</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Formularios Activos
-            </span>
-          </div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
             Mantenimiento de Opciones de Menú
           </h2>

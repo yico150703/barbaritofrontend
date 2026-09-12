@@ -305,13 +305,6 @@ export const UsuariosPage: React.FC = () => {
       {/* Encabezado Principal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <div className="flex items-center gap-2 text-[#063D2A] text-xs font-bold uppercase tracking-wider mb-1">
-            <Users className="w-4 h-4 text-[#28D978]" />
-            <span>Módulo de Seguridad RBAC &bull; Requerimiento 2</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-[#28D978]/20 text-[#063D2A] border border-[#28D978]/40">
-              Formularios Activos
-            </span>
-          </div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
             Mantenimiento de Usuarios y Perfiles
           </h2>

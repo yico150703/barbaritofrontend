@@ -77,74 +77,11 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                 El menú lateral izquierdo ahora muestra los submódulos exclusivos de administración técnica.
               </p>
             </div>
-
-            {/* Botón para volver al Inicio de 1 clic */}
-            <div className="shrink-0">
-              <button
-                onClick={volverAInicio}
-                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
-              >
-                <Home className="w-4 h-4 text-sky-400" />
-                <span>Volver al Inicio (Cambiar Panel)</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Métricas Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Roles del Sistema</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">3 Perfiles</p>
-              <span className="text-[11px] text-sky-600 font-semibold">Técnico, Gerente, Miembro</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Opciones de Menú</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">28 Rutas</p>
-              <span className="text-[11px] text-indigo-600 font-semibold">Estructura jerárquica activa</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <ListTree className="w-6 h-6" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Usuarios en BD</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">3 Cuentas</p>
-              <span className="text-[11px] text-emerald-600 font-semibold">Con contraseñas hasheadas</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Users className="w-6 h-6" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Estado de Servidor</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">100% OK</p>
-              <span className="text-[11px] text-emerald-600 font-semibold">PostgreSQL & Flask REST</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
           </div>
         </div>
 
         {/* Módulos Principales del Panel Técnico */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-          <h3 className="text-base font-bold text-slate-900 mb-5 flex items-center gap-2">
-            <Wrench className="w-4 h-4 text-sky-600" />
-            <span>Módulos y CRUDs del Panel Técnico</span>
-          </h3>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* CRUD Perfiles */}
             <Link
@@ -260,17 +197,6 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                 Supervisión de operaciones de inventario, stock, movimientos, catálogo de productos, personal y compras.
                 El menú lateral izquierdo contiene los 10 módulos con todos sus respectivos submenús.
               </p>
-            </div>
-
-            {/* Botón para volver al Inicio */}
-            <div className="shrink-0">
-              <button
-                onClick={volverAInicio}
-                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
-              >
-                <Home className="w-4 h-4 text-amber-400" />
-                <span>Volver al Inicio (Cambiar Panel)</span>
-              </button>
             </div>
           </div>
         </div>
@@ -522,16 +448,6 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
             </p>
           </div>
 
-          {/* Botón para volver al Inicio */}
-          <div className="shrink-0">
-            <button
-              onClick={volverAInicio}
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
-            >
-              <Home className="w-4 h-4 text-emerald-400" />
-              <span>Volver al Inicio (Cambiar Panel)</span>
-            </button>
-          </div>
         </div>
       </div>
 

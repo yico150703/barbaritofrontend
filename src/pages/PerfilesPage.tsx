@@ -159,13 +159,6 @@ export const PerfilesPage: React.FC = () => {
       {/* Encabezado Principal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <div className="flex items-center gap-2 text-sky-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <Shield className="w-4 h-4" />
-            <span>Módulo de Seguridad RBAC &bull; Requerimiento 1</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-sky-50 text-sky-700 border border-sky-200">
-              Formularios Activos
-            </span>
-          </div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
             Mantenimiento de Perfiles (Roles)
           </h2>
