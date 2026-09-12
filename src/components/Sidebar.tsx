@@ -84,24 +84,26 @@ export const Sidebar: React.FC = () => {
       navigate("/home");
       return;
     }
-    if (
-      item.urlMenu.includes("panel-tecnico") ||
-      item.urlMenu.includes("perfiles") ||
-      item.urlMenu.includes("opciones-menu") ||
-      item.urlMenu.includes("usuarios")
-    ) {
+    if (item.urlMenu.includes("panel-tecnico")) {
       await seleccionarPanel("tecnico");
-    } else if (item.urlMenu.includes("panel-gerencial")) {
+      navigate("/home/panel-tecnico");
+      return;
+    }
+    if (item.urlMenu.includes("panel-gerencial")) {
       await seleccionarPanel("gerencial");
-    } else if (item.urlMenu.includes("panel-miembro-equipo")) {
+      navigate("/home/panel-gerencial");
+      return;
+    }
+    if (item.urlMenu.includes("panel-miembro-equipo")) {
       await seleccionarPanel("miembro-equipo");
+      navigate("/home/panel-miembro-equipo");
+      return;
     }
     navigate(item.urlMenu);
   };
 
   const getPanelTitle = () => {
-    if (!panelActivo) return "Dashboard Inicial";
-    if (panelActivo === "tecnico") return "Panel Técnico";
+    if (!panelActivo || panelActivo === "tecnico") return "Panel Técnico";
     if (panelActivo === "gerencial") return "Panel Administrador";
     if (panelActivo === "miembro-equipo") return "Panel Miembro";
     return perfilActivo ? perfilActivo.nombre : "Gestión RBAC";
@@ -151,6 +153,28 @@ export const Sidebar: React.FC = () => {
 
       {/* Lista del Menú Dinámico */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1.5">
+        {/* Acceso rápido para regresar a Panel Técnico si se está navegando en Gerencial o Miembro de Equipo */}
+        {panelActivo && panelActivo !== "tecnico" && (
+          <div className="mb-2 pb-2 border-b border-[#063D2A]/60">
+            <button
+              type="button"
+              onClick={async () => {
+                await seleccionarPanel("tecnico");
+                navigate("/home/panel-tecnico");
+              }}
+              title="Volver a Panel Técnico"
+              className={`w-full flex items-center gap-2.5 rounded-xl bg-sky-950/70 hover:bg-sky-900/90 text-sky-300 border border-sky-500/40 text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                sidebarCollapsed ? "p-2.5 justify-center" : "px-3 py-2 justify-between"
+              }`}
+            >
+              <span className="flex items-center gap-2 truncate">
+                <Wrench className="w-4 h-4 text-sky-400 shrink-0" />
+                {!sidebarCollapsed && <span className="truncate">Volver a Panel Técnico</span>}
+              </span>
+              {!sidebarCollapsed && <ArrowLeft className="w-3.5 h-3.5 text-sky-400 shrink-0" />}
+            </button>
+          </div>
+        )}
         {menuTree.length === 0 ? (
           <div className="p-4 text-center text-xs text-slate-400">
             {!sidebarCollapsed && "Cargando opciones..."}

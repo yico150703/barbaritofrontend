@@ -215,6 +215,9 @@ export const UsuariosPage: React.FC = () => {
     }
   };
 
+  const isEditarPage = location.pathname.toLowerCase().includes("editar");
+  const [filtroEstado, setFiltroEstado] = useState<"todos" | "activos" | "inactivos">("todos");
+
   // Definición de columnas para TablaGenerica
   const columns: ColumnDef<Usuario>[] = [
     {
@@ -276,6 +279,18 @@ export const UsuariosPage: React.FC = () => {
     },
   ];
 
+  // En la página de edición se puede filtrar por activos/inactivos para fácil gestión
+  const usuariosAMostrar = isEditarPage
+    ? usuarios.filter((u) => {
+        if (filtroEstado === "activos") return u.estadoRegistro === 1;
+        if (filtroEstado === "inactivos") return u.estadoRegistro === 0;
+        return true;
+      })
+    : usuarios;
+
+  const totalActivos = usuarios.filter((u) => u.estadoRegistro === 1).length;
+  const totalInactivos = usuarios.filter((u) => u.estadoRegistro === 0).length;
+
   return (
     <div className="space-y-6">
       {/* Mensaje de Confirmación / Éxito */}
@@ -291,75 +306,125 @@ export const UsuariosPage: React.FC = () => {
         </div>
       )}
 
-      {/* Encabezado Principal */}
+      {/* Encabezado Principal Diferenciado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
-            Mantenimiento de Usuarios y Perfiles
+            {isEditarPage ? "Editar y Habilitar Usuarios" : "Gestión de Usuarios"}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Gestión completa de usuarios (Tabla <code>Usuario</code>), edición de cuentas y habilitación de acceso al sistema.
+            {isEditarPage
+              ? "Modificación de datos personales, restablecimiento de contraseñas, asignación de perfiles y habilitación de cuentas inactivas."
+              : "Directorio general de usuarios registrados en el sistema y alta de nuevas cuentas."}
           </p>
         </div>
 
         <div>
-          <button
-            onClick={handleOpenNuevo}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold rounded-xl shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
-          >
-            <UserPlus className="w-4 h-4 text-[#28D978]" />
-            <span>Nuevo Usuario</span>
-          </button>
+          {!isEditarPage ? (
+            <button
+              onClick={handleOpenNuevo}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#063D2A] hover:bg-[#022A1E] text-white text-xs font-bold rounded-xl shadow-md shadow-[#063D2A]/20 transition-all cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4 text-[#28D978]" />
+              <span>Nuevo Usuario</span>
+            </button>
+          ) : (
+            /* Filtros rápidos en la página de edición para localizar usuarios fácilmente */
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold">
+              <button
+                onClick={() => setFiltroEstado("todos")}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  filtroEstado === "todos"
+                    ? "bg-white text-slate-900 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Todos ({usuarios.length})
+              </button>
+              <button
+                onClick={() => setFiltroEstado("activos")}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  filtroEstado === "activos"
+                    ? "bg-emerald-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Activos ({totalActivos})
+              </button>
+              <button
+                onClick={() => setFiltroEstado("inactivos")}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  filtroEstado === "inactivos"
+                    ? "bg-rose-600 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Inactivos ({totalInactivos})
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Tabla con Búsqueda y Paginación (Formularios y Acciones siempre habilitados) */}
+      {/* Tabla con Búsqueda y Paginación */}
       <TablaGenerica
         columns={columns}
-        data={usuarios}
+        data={usuariosAMostrar}
         searchQuery={search}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Buscar por nombre, apellido, correo o DNI..."
+        searchPlaceholder={
+          isEditarPage
+            ? "Buscar por nombre, apellido o DNI para editar..."
+            : "Buscar usuario en el directorio..."
+        }
         page={page}
         totalPages={totalPages}
         totalRecords={totalRecords}
         onPageChange={(p) => setPage(p)}
-        onNuevo={handleOpenNuevo}
+        onNuevo={!isEditarPage ? handleOpenNuevo : undefined}
         nuevoLabel="Nuevo Usuario"
-        renderActions={(item) => (
-          <div className="inline-flex items-center gap-1.5">
-            <button
-              onClick={() => handleOpenEdit(item)}
-              title="Editar datos del usuario"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <Edit3 className="w-3.5 h-3.5 text-slate-600" />
-              <span>Editar</span>
-            </button>
+        renderActions={
+          isEditarPage
+            ? (item) => (
+                <div className="inline-flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleOpenEdit(item)}
+                    title="Editar datos del usuario"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+                    <span>Editar</span>
+                  </button>
 
-            {item.estadoRegistro === 0 ? (
-              <button
-                onClick={() => handleHabilitarUsuario(item)}
-                title="Habilitar este usuario"
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
-              >
-                <UserCheck className="w-3.5 h-3.5 text-white" />
-                <span>Habilitar</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setDeletingUser(item)}
-                title="Inhabilitar usuario (Soft delete)"
-                className="inline-flex items-center gap-1 px-2 py-1.5 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Inhabilitar</span>
-              </button>
-            )}
-          </div>
-        )}
+                  {item.estadoRegistro === 0 ? (
+                    <button
+                      onClick={() => handleHabilitarUsuario(item)}
+                      title="Habilitar este usuario"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                    >
+                      <UserCheck className="w-3.5 h-3.5 text-white" />
+                      <span>Habilitar</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setDeletingUser(item)}
+                      title="Inhabilitar usuario (Soft delete)"
+                      className="inline-flex items-center gap-1 px-2 py-1.5 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Inhabilitar</span>
+                    </button>
+                  )}
+                </div>
+              )
+            : undefined
+        }
         loading={loading}
-        emptyText="No se encontraron usuarios registrados."
+        emptyText={
+          isEditarPage
+            ? "No se encontraron usuarios para editar."
+            : "No se encontraron usuarios registrados en el sistema."
+        }
         keyExtractor={(item) => item.idUsuario}
       />
 

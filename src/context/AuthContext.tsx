@@ -136,10 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Función para cargar el menú del panel activo desde el Backend
   const cargarMenuPorPanel = async (panel: TipoPanel, idUsuario: number) => {
-    const esTecnico = perfiles.some(
-      (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
-    );
-    if (esTecnico || !panel || panel === "tecnico") {
+    if (!panel || panel === "tecnico") {
       setMenuTree(MENU_TECNICO_TREE);
       return;
     }
@@ -237,10 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         setPanelActivo(panelDetectado);
-        const esTecnico = perfiles.some(
-          (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
-        );
-        if (!panelDetectado || panelDetectado === "tecnico" || esTecnico) {
+        if (!panelDetectado || panelDetectado === "tecnico") {
           setMenuTree(MENU_TECNICO_TREE);
         } else {
           localStorage.setItem("almacen_active_panel", panelDetectado);
@@ -299,10 +293,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const seleccionarPanel = async (panel: TipoPanel) => {
     setPanelActivo(panel);
-    const esTecnico = perfiles.some(
-      (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
-    );
-    if (!panel || panel === "tecnico" || esTecnico) {
+
+    if (!panel || panel === "tecnico") {
       if (panel) {
         localStorage.setItem("almacen_active_panel", panel);
       } else {
@@ -312,6 +304,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    // Al seleccionar Panel Gerencial o Miembro de Equipo, cargar inmediatamente su árbol de opciones
     localStorage.setItem("almacen_active_panel", panel);
 
     if (usuario) {
@@ -320,13 +313,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const recargarMenu = async () => {
-    const esTecnico = perfiles.some(
-      (p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic") || p.nombre.toLowerCase().includes("técnic")
-    );
-    if (esTecnico) {
-      setMenuTree(MENU_TECNICO_TREE);
-      return;
-    }
     if (usuario && panelActivo && panelActivo !== "tecnico") {
       await cargarMenuPorPanel(panelActivo, usuario.idUsuario);
     } else {

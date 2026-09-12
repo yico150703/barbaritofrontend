@@ -198,6 +198,20 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                 El menú lateral izquierdo contiene los 10 módulos con todos sus respectivos submenús.
               </p>
             </div>
+
+            <div className="shrink-0 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  await seleccionarPanel("tecnico");
+                  navigate("/home/panel-tecnico");
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all shadow-sm cursor-pointer"
+              >
+                <Wrench className="w-4 h-4 text-sky-400" />
+                <span>Volver a Panel Técnico</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -448,6 +462,19 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
             </p>
           </div>
 
+          <div className="shrink-0 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={async () => {
+                await seleccionarPanel("tecnico");
+                navigate("/home/panel-tecnico");
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all shadow-sm cursor-pointer"
+            >
+              <Wrench className="w-4 h-4 text-sky-400" />
+              <span>Volver a Panel Técnico</span>
+            </button>
+          </div>
         </div>
       </div>
 
