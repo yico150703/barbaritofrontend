@@ -82,7 +82,7 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
 
         {/* Módulos Principales del Panel Técnico */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* 1. Mantenimiento de Perfiles */}
             <Link
               to="/home/perfiles"
@@ -123,6 +123,28 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
               </div>
               <div className="pt-5 mt-4 border-t border-indigo-100 flex items-center justify-between text-xs font-bold text-indigo-600">
                 <span>Acceder a Opciones</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* 3. Gestión de Usuarios */}
+            <Link
+              to="/home/usuarios"
+              className="p-6 rounded-2xl border border-slate-200/80 bg-gradient-to-b from-slate-50/40 to-white hover:border-slate-400 hover:shadow-md transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-slate-800 text-white flex items-center justify-center mb-4 shadow-md shadow-slate-800/20">
+                  <Users className="w-6 h-6" />
+                </div>
+                <h4 className="text-base font-bold text-slate-900 group-hover:text-slate-800 transition-colors">
+                  Gestión de Usuarios
+                </h4>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Directorio del personal institucional y alta de nuevos usuarios en el sistema.
+                </p>
+              </div>
+              <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700">
+                <span>Directorio Usuarios</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
@@ -175,53 +197,6 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                 </button>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Métricas Gerenciales */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Gestión de Stock</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">1,420</p>
-              <span className="text-[11px] text-amber-600 font-semibold">Ítems auditados en almacén</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Boxes className="w-6 h-6" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Movimientos Hoy</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">48 Transacciones</p>
-              <span className="text-[11px] text-emerald-600 font-semibold">Entradas y salidas registradas</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Solicitudes de Compra</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">7 Pendientes</p>
-              <span className="text-[11px] text-purple-600 font-semibold">Requerimientos de abastecimiento</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase text-slate-500">Personal Registrado</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">3 Usuarios</p>
-              <span className="text-[11px] text-indigo-600 font-semibold">Cuentas con roles asignados</span>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Users className="w-6 h-6" />
-            </div>
           </div>
         </div>
 
@@ -423,53 +398,6 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
               Módulos autorizados para recepción, conteo físico de existencias, registro de transacciones en kardex y solicitudes.
               El menú lateral contiene exactamente tus 4 submódulos operativos.
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Métricas Operativas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase text-slate-500">Stock Actual</span>
-            <p className="text-2xl font-black text-slate-900 mt-1">1,420</p>
-            <span className="text-[11px] text-emerald-600 font-semibold">Ítems disponibles</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <Boxes className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase text-slate-500">Transacciones</span>
-            <p className="text-2xl font-black text-slate-900 mt-1">15</p>
-            <span className="text-[11px] text-sky-600 font-semibold">Movimientos del turno</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center">
-            <TrendingUp className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase text-slate-500">Solicitudes</span>
-            <p className="text-2xl font-black text-slate-900 mt-1">2 Activas</p>
-            <span className="text-[11px] text-amber-600 font-semibold">Requerimientos registrados</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-            <FileText className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase text-slate-500">Inventario Físico</span>
-            <p className="text-2xl font-black text-slate-900 mt-1">Al día</p>
-            <span className="text-[11px] text-emerald-600 font-semibold">Conteo verificado</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <ClipboardCheck className="w-6 h-6" />
           </div>
         </div>
       </div>
