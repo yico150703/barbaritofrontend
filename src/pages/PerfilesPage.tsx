@@ -60,13 +60,6 @@ export const PerfilesPage: React.FC = () => {
     cargarPerfiles(1, query);
   };
 
-  const handleOpenNuevo = () => {
-    setEditingPerfil(null);
-    setFormData({ nombre: "", descripcion: "" });
-    setFormError(null);
-    setIsModalOpen(true);
-  };
-
   const handleOpenEdit = (perfil: Perfil) => {
     setEditingPerfil(perfil);
     setFormData({
@@ -79,6 +72,8 @@ export const PerfilesPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editingPerfil) return;
+
     if (!formData.nombre.trim()) {
       setFormError("El nombre del perfil es obligatorio.");
       return;
@@ -88,11 +83,7 @@ export const PerfilesPage: React.FC = () => {
       setFormLoading(true);
       setFormError(null);
 
-      if (editingPerfil) {
-        await api.put(`/perfiles/${editingPerfil.idPerfil}`, formData);
-      } else {
-        await api.post("/perfiles", formData);
-      }
+      await api.put(`/perfiles/${editingPerfil.idPerfil}`, formData);
 
       setIsModalOpen(false);
       cargarPerfiles(page, search);
@@ -189,8 +180,6 @@ export const PerfilesPage: React.FC = () => {
         totalPages={totalPages}
         totalRecords={totalRecords}
         onPageChange={(p) => setPage(p)}
-        onNuevo={!isEditarPage ? handleOpenNuevo : undefined}
-        nuevoLabel="Nuevo Perfil"
         onEdit={isEditarPage ? handleOpenEdit : undefined}
         onDelete={isEditarPage ? ((p) => setDeletingPerfil(p)) : undefined}
         loading={loading}
@@ -198,11 +187,11 @@ export const PerfilesPage: React.FC = () => {
         keyExtractor={(item) => item.idPerfil}
       />
 
-      {/* Modal Crear/Editar */}
+      {/* Modal Editar Perfil */}
       <ModalGenerico
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingPerfil ? "Editar Perfil" : "Nuevo Perfil"}
+        title="Editar Perfil"
         maxWidth="max-w-md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
