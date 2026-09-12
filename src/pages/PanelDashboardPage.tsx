@@ -82,7 +82,7 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
 
         {/* Módulos Principales del Panel Técnico */}
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 1. Mantenimiento de Perfiles */}
             <Link
               to="/home/perfiles"
@@ -105,29 +105,7 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
               </div>
             </Link>
 
-            {/* 2. Editar Perfiles */}
-            <Link
-              to="/home/perfiles/editar"
-              className="p-6 rounded-2xl border border-sky-200/80 bg-gradient-to-b from-sky-50/40 to-white hover:border-sky-400 hover:shadow-md transition-all group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center mb-4 shadow-md shadow-sky-600/20">
-                  <Edit3 className="w-6 h-6" />
-                </div>
-                <h4 className="text-base font-bold text-slate-900 group-hover:text-sky-700 transition-colors">
-                  Editar Perfiles
-                </h4>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Modificación de nombres de roles, descripciones y desactivación lógica de perfiles.
-                </p>
-              </div>
-              <div className="pt-5 mt-4 border-t border-sky-100 flex items-center justify-between text-xs font-bold text-sky-600">
-                <span>Editar Roles</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* 3. Mantenimiento de Opciones de Menú */}
+            {/* 2. Mantenimiento de Opciones de Menú */}
             <Link
               to="/home/opciones-menu"
               className="p-6 rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white hover:border-indigo-400 hover:shadow-md transition-all group flex flex-col justify-between"
@@ -148,77 +126,16 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
-
-            {/* 4. Editar Opciones de Menú */}
-            <Link
-              to="/home/opciones-menu/editar"
-              className="p-6 rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white hover:border-indigo-400 hover:shadow-md transition-all group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-indigo-700 text-white flex items-center justify-center mb-4 shadow-md shadow-indigo-700/20">
-                  <Edit3 className="w-6 h-6" />
-                </div>
-                <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
-                  Editar Opciones de Menú
-                </h4>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Ajuste de URLs, orden de presentación, asignación de padres y control de estado de menús.
-                </p>
-              </div>
-              <div className="pt-5 mt-4 border-t border-indigo-100 flex items-center justify-between text-xs font-bold text-indigo-600">
-                <span>Editar Opciones</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* 5. Gestión de Usuarios */}
-            <Link
-              to="/home/usuarios"
-              className="p-6 rounded-2xl border border-slate-200/80 bg-gradient-to-b from-slate-50/40 to-white hover:border-slate-400 hover:shadow-md transition-all group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-slate-800 text-white flex items-center justify-center mb-4 shadow-md shadow-slate-800/20">
-                  <Users className="w-6 h-6" />
-                </div>
-                <h4 className="text-base font-bold text-slate-900 group-hover:text-slate-800 transition-colors">
-                  Gestión de Usuarios
-                </h4>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Directorio del personal institucional y alta de nuevos usuarios en el sistema.
-                </p>
-              </div>
-              <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700">
-                <span>Directorio Usuarios</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* 6. Editar Usuario */}
-            <Link
-              to="/home/usuarios/editar"
-              className="p-6 rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/40 to-white hover:border-emerald-400 hover:shadow-md transition-all group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mb-4 shadow-md shadow-emerald-600/20">
-                  <UserCheck className="w-6 h-6" />
-                </div>
-                <h4 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                  Editar Usuario
-                </h4>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  Actualización de datos personales, contraseñas, roles y habilitación de cuentas inactivas.
-                </p>
-              </div>
-              <div className="pt-5 mt-4 border-t border-emerald-100 flex items-center justify-between text-xs font-bold text-emerald-700">
-                <span>Editar Cuentas</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
           </div>
         </div>
       </div>
     );
   }
+
+  // Comprobar si el usuario es técnico para habilitar retorno
+  const esTecnico =
+    perfilActivo?.idPerfil === 1 ||
+    usuario?.perfiles?.some((p) => p.idPerfil === 1 || p.nombre.toLowerCase().includes("tecnic"));
 
   // ===========================================================================
   // 2. VISTA: PANEL ADMINISTRADOR / GERENCIAL
@@ -243,19 +160,21 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
               </p>
             </div>
 
-            <div className="shrink-0 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={async () => {
-                  await seleccionarPanel("tecnico");
-                  navigate("/home/panel-tecnico");
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all shadow-sm cursor-pointer"
-              >
-                <Wrench className="w-4 h-4 text-sky-400" />
-                <span>Volver a Panel Técnico</span>
-              </button>
-            </div>
+            {esTecnico && (
+              <div className="shrink-0 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await seleccionarPanel("tecnico");
+                    navigate("/home/panel-tecnico");
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all shadow-sm cursor-pointer"
+                >
+                  <Wrench className="w-4 h-4 text-sky-400" />
+                  <span>Volver a Panel Técnico</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -504,20 +423,6 @@ export const PanelDashboardPage: React.FC<PanelDashboardPageProps> = ({ panelTip
               Módulos autorizados para recepción, conteo físico de existencias, registro de transacciones en kardex y solicitudes.
               El menú lateral contiene exactamente tus 4 submódulos operativos.
             </p>
-          </div>
-
-          <div className="shrink-0 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={async () => {
-                await seleccionarPanel("tecnico");
-                navigate("/home/panel-tecnico");
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all shadow-sm cursor-pointer"
-            >
-              <Wrench className="w-4 h-4 text-sky-400" />
-              <span>Volver a Panel Técnico</span>
-            </button>
           </div>
         </div>
       </div>

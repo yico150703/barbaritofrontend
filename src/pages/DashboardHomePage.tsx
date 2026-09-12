@@ -34,21 +34,17 @@ export const DashboardHomePage: React.FC = () => {
     perfilActivo?.idPerfil === 3 ||
     perfiles.some((p) => p.idPerfil === 3 || p.nombre.toLowerCase().includes("miembro"));
 
-  // Si no es técnico, redirigir inmediatamente a su dashboard autorizado sin mostrar los 3 paneles
+  // Configurar panel según rol del usuario al ingresar a Inicio (todos inician en /home)
   useEffect(() => {
     if (!esTecnico) {
       if (esGerente) {
         seleccionarPanel("gerencial");
-        navigate("/home/panel-gerencial", { replace: true });
-        return;
-      }
-      if (esMiembro) {
+      } else if (esMiembro) {
         seleccionarPanel("miembro-equipo");
-        navigate("/home/panel-miembro-equipo", { replace: true });
-        return;
       }
+    } else {
+      seleccionarPanel(null);
     }
-    seleccionarPanel(null);
   }, [esTecnico, esGerente, esMiembro]);
 
   const handleEntrarPanel = async (panel: TipoPanel, ruta: string) => {

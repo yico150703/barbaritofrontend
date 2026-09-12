@@ -330,12 +330,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setMenuTree(MENU_TECNICO_TREE);
       localStorage.removeItem("almacen_active_panel");
     } else if (tieneGerente) {
-      rutaDestino = "/home/panel-gerencial";
+      rutaDestino = "/home";
       setPanelActivo("gerencial");
       localStorage.setItem("almacen_active_panel", "gerencial");
       await cargarMenuPorPanel("gerencial", nuevoUsuario.idUsuario);
     } else if (tieneMiembro) {
-      rutaDestino = "/home/panel-miembro-equipo";
+      rutaDestino = "/home";
       setPanelActivo("miembro-equipo");
       localStorage.setItem("almacen_active_panel", "miembro-equipo");
       await cargarMenuPorPanel("miembro-equipo", nuevoUsuario.idUsuario);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { OpcionMenu } from "../types";
@@ -50,14 +50,27 @@ const getIconForOption = (nombre: string): LucideIcon => {
 };
 
 export const Sidebar: React.FC = () => {
-  const { menuTree, sidebarCollapsed, toggleSidebar, perfilActivo, panelActivo, seleccionarPanel } = useAuth();
+  const { menuTree, sidebarCollapsed, toggleSidebar, perfilActivo, panelActivo, seleccionarPanel, perfiles } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Acordeones abiertos (Panel Técnico abierto por defecto)
-  const [openAccordions, setOpenAccordions] = useState<Record<number, boolean>>({
-    10: true,
-  });
+  // Comprobar si el usuario tiene rol de técnico
+  const esTecnico =
+    perfilActivo?.idPerfil === 1 ||
+    perfiles?.some(
+      (p) =>
+        p.idPerfil === 1 ||
+        p.nombre.toLowerCase().includes("técnico") ||
+        p.nombre.toLowerCase().includes("tecnico")
+    );
+
+  // Acordeones abiertos (todos cerrados por defecto al ingresar a un panel o login)
+  const [openAccordions, setOpenAccordions] = useState<Record<number, boolean>>({});
+
+  // Cada vez que se ingrese a un panel o cambie de panel/perfil, cerrar todos los acordeones predeterminadamente
+  useEffect(() => {
+    setOpenAccordions({});
+  }, [panelActivo, perfilActivo?.idPerfil]);
 
   const toggleAccordion = (id: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -80,7 +93,9 @@ export const Sidebar: React.FC = () => {
 
   const handleItemClick = async (item: OpcionMenu) => {
     if (item.idOpcionMenu === 1 || item.urlMenu === "/home" || item.urlMenu === "/dashboard") {
-      await seleccionarPanel(null);
+      if (esTecnico) {
+        await seleccionarPanel(null);
+      }
       navigate("/home");
       return;
     }
@@ -153,8 +168,8 @@ export const Sidebar: React.FC = () => {
 
       {/* Lista del Menú Dinámico */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1.5">
-        {/* Acceso rápido para regresar a Panel Técnico si se está navegando en Gerencial o Miembro de Equipo */}
-        {panelActivo && panelActivo !== "tecnico" && (
+        {/* Acceso rápido para regresar a Panel Técnico: solo visible para el Técnico cuando navega dentro del Panel Gerencial */}
+        {esTecnico && panelActivo === "gerencial" && (
           <div className="mb-2 pb-2 border-b border-[#063D2A]/60">
             <button
               type="button"
@@ -236,18 +251,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const hasChildren = Boolean(item.hijos && item.hijos.length > 0);
   const active = isRouteActive(item.urlMenu);
 
-  // Comprobar si algún descendiente está activo
-  const checkChildActive = (node: OpcionMenu): boolean => {
-    if (isRouteActive(node.urlMenu)) return true;
-    if (node.hijos && node.hijos.length > 0) {
-      return node.hijos.some(checkChildActive);
-    }
-    return false;
-  };
-
-  const isAnyChildActive = hasChildren && item.hijos!.some(checkChildActive);
-  const isExplicitlyToggled = openAccordions[item.idOpcionMenu] !== undefined;
-  const expanded = isExplicitlyToggled ? openAccordions[item.idOpcionMenu] : isAnyChildActive;
+  // Los acordeones siempre inician cerrados predeterminadamente para todos los usuarios
+  const expanded = Boolean(openAccordions[item.idOpcionMenu]);
 
   const handleRowClick = (e: React.MouseEvent) => {
     if (hasChildren) {
